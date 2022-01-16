@@ -18,11 +18,12 @@
     <div class="camera d-flex flex-column align-items-center justify-content-center">
 
         <!-- Camera Inputs -->
-        <div class="video-wrap position-relative crop overflow-hidden rounded-3 d-flex flex-column align-items-center justify-content-center">
+        <div id="videoWrap" class="video-wrap position-relative crop overflow-hidden rounded-3 d-flex flex-column align-items-center justify-content-center">
             <span class="position-absolute top-0 start-0 mt-2 ms-2" style="width:35px;z-index:1;">
-                <svg class="w-6 h-6" fill="rgba(86, 59, 255, 0.4)" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path></svg>
+                <svg class="w-6 h-6" fill="rgba(86, 59, 255)" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path></svg>
             </span>
-            <div class="face-border position-absolute top-50 start-50 translate-middle"></div>
+            <span id="modelInfo" class="position-absolute top-0 start-0 mt-3 ms-5" style="z-index:1">Loading Model...</span>
+            <div id="faceBorder" class="face-border blinking position-absolute top-50 start-50 translate-middle"></div>
             <video id="video">Video stream not available.</video>
         </div>
         
@@ -76,6 +77,8 @@
     <div class="output d-none"><img id="photo" alt="The screen capture will appear in this box."></div>
 </div>
 
+<script src="{{ url_for('static', filename='js/face-api.min.js') }}"></script>
+
 <script>
 /*
     References:
@@ -96,14 +99,25 @@
     var streaming = false
 
     // The various HTML elements we need to configure or control. These
-    // will be set by the startup() function.
+    // will be set by the initiateCamera() function.
 
     var video = null
     var canvas = null
     var photo = null
     var startbutton = null
 
-    function startup() {
+    // Face API
+    function startStream() {
+        Promise.all([
+            faceapi.loadTinyFaceDetectorModel('../static/models')
+        ]).then(() => {
+            initiateCamera()
+        }).catch(e => {
+            console.log(e)
+        })
+    }
+
+    function initiateCamera() {
         video = document.getElementById('video')
         canvas = document.getElementById('canvas')
         photo = document.getElementById('photo')
@@ -146,8 +160,7 @@
         clearphoto()
     }
 
-    // Fill the photo with an indication that none has been
-    // captured.
+    // Fill the photo with an indication that none has been captured.
 
     function clearphoto() {
         var context = canvas.getContext('2d')
@@ -181,7 +194,8 @@
         }
     }
 
-    // https://stackoverflow.com/questions/48619138/how-to-upload-canvas-and-image-to-the-server-with-javascript
+    // https://stackoverflow.com/questions
+    // /48619138/how-to-upload-canvas-and-image-to-the-server-with-javascript
     function upload_to_server(canvasData) {
 
         return fetch('http://127.0.0.1:5000/predict', {
@@ -193,21 +207,93 @@
         }).then((html) => {
             if (html.includes('error-message')) {
                 document.body.innerHTML = html
-                streaming = false
-                startup()
+                // [Hacky] else face detection does not work
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000)
             } else {
                 document.body.innerHTML = html
             }
         }).catch(err => console.log(err))
     }
 
-    // Set up our event listener to run the startup process
-    // once loading is complete.
-    window.addEventListener('load', startup, false)
+    // Run the initiateCamera process once loading is complete.
+    window.addEventListener('load', startStream, false)
 })()
+
+var video = document.getElementById('video');
+
+video.addEventListener('play', () => {
+    
+    // [Hacky] else it'll show error in faceapi.createCanvasFromMedia(video)
+    new Promise((res, rej) => {
+        setTimeout(() => { res() }, 100)
+    }).then(() => {
+        const canvas = faceapi.createCanvasFromMedia(video)
+        document.getElementById('videoWrap').append(canvas)
+        
+        const displaySize = { width: video.width, height: video.height }
+        faceapi.matchDimensions(canvas, displaySize)
+        
+        var no_detection_count = 0
+        var prev_detection = null
+        var face_border = document.getElementById('faceBorder')
+        
+        var modelInfo = document.getElementById('modelInfo')
+
+        setInterval(async () => {
+        
+            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+            
+            let resizedDetections = faceapi.resizeResults(detections, displaySize)
+
+            // Prevent detector from turning on and off
+            if (resizedDetections.length == 0 && prev_detection != null) {
+                no_detection_count += 1
+                no_detection_count <= 10 ? resizedDetections = prev_detection : ''
+            } else if (resizedDetections.length >= 1) {
+                no_detection_count = 0
+                prev_detection = resizedDetections
+            }
+
+            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+            faceapi.draw.drawDetections(canvas, resizedDetections)
+            
+            // Check if the center of the detection box is within a threshold of the center box
+            if (typeof resizedDetections[0] != 'undefined') {
+                const dtc = resizedDetections[0]._box
+                let dc_x, dc_y, ct_x, ct_y;
+    
+                dc_x = (dtc._width / 2) + dtc._x
+                dc_y = (dtc._height / 2) + dtc._y
+                ct_x = 400
+                ct_y = 300
+                
+                distance = ((ct_x - dc_x) ** 2 + (ct_y - dc_y) ** 2) ** 0.5
+    
+                if (distance < 100) {
+                    face_border.style.borderColor = '#00FF00'
+                    face_border.classList.remove("blinking")
+                } else {
+                    face_border.style.borderColor = '#FF0000'
+                    face_border.classList.add("blinking")
+                }
+                
+            } else {
+                face_border.style.borderColor = '#FF0000'
+                face_border.classList.add("blinking")
+            }
+
+            modelInfo.style.display = 'none'
+
+        }, 125)
+    })
+
+}, false)
 </script>
 
 <style>
+
     #video {
         -webkit-transform: scaleX(-1);
         transform: scaleX(-1);
@@ -225,16 +311,29 @@
     .face-border {
         height: 300px;
         width: 300px;
-        border: 5px dashed rgba(86, 59, 255, 0.5);
-        border-radius: 10px;
+        border: 3px solid rgb(86, 59, 255);
+        border-radius: 15px;
         z-index: 2;
-        animation: blinker 1s linear infinite;
+    }
+    
+    .blinking {
+        opacity: 1;
+        animation: blinker 0.5s linear infinite;
     }
 
     @keyframes blinker {
         50% {
           opacity: 0;
         }
+    }
+
+    #videoWrap > canvas {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        opacity: 1; /* Hide the bounding boxes*/
+        -webkit-transform: scaleX(-1); 
+        transform: scaleX(-1) translateX(50%) translateY(-50%);
     }
 </style>
 
