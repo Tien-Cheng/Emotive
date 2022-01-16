@@ -1,0 +1,27 @@
+<!-- Inherits from layout.html -->
+{% extends "layout.html" %}
+
+<!-- The block content replace the one encapsulated in  layout.html -->
+{% block content %}
+    <div class="mx-auto mt-3 border rounded p-4 bg-white" style="width: 400px;">
+        <h3 class="mb-4 fw-bold">Register</h3>
+        <hr>
+        <form action="/register" method="post" novalidate>
+            {{ form.hidden_tag() }}
+            <p class="mb-1">{{form.username.label}}</p>
+            <div>{{ form.username(class_='form-control') }}</div>
+            {% for error in form.username.errors %}
+                <p class="mb-0 text-red text-small">{{ error }}</p>
+            {% endfor %}
+            <p class="mb-1 mt-4">{{form.password.label}}</p>
+            <div>{{ form.password(class_='form-control') }}</div>
+            {% for error in form.password.errors %}
+                <p class="mb-0 text-red text-small">{{ error }}</p>
+            {% endfor %}
+            {{ form.submit(class_='btn bg-purple text-white w-100 mb-3 mt-4') }}
+        </form>
+        <hr>
+        <p class="text-center">Already have an account?</p>
+        <a href="/login"><button class="btn bg-dark text-white w-100">Login</button></a>
+    </div>
+{% endblock %}
