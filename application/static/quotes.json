@@ -1,0 +1,37 @@
+{
+    "happy" : [
+        { "author" : "Werner Erhan", "quote" : "Happiness is a function of accepting what is."},
+        { "author" : "Steve Maraboli", "quote" : "Happiness is not the absence of problems, it's the ability to deal with them."},
+        { "author" : "George Sand", "quote" : "There is only one happiness in this life, to love and be loved."}
+    ],
+    "angry" : [
+        { "author" : "Laurence J. Peter", "quote" : "Speak when you are angry - and you'll make the best speech you'll ever regret."},
+        { "author" : "Ford Frick", "quote" : "Keep your temper. A decision made in anger is never sound."},
+        { "author" : "Robert Green Ingersoll", "quote" : "Anger is a wind which blows out the lamp of the mind."}
+    ],
+    "neutral" : [
+        { "author" : "Vijay Shankar", "quote" : "Be it high or low, it doesn't matter. I need to stay calm and neutral all the time."},
+        { "author" : "Jesse Jackson", "quote" : "Time is neutral and does not change things. With courage and initiative, leaders change things."},
+        { "author" : "Simon Mainwaring", "quote" : "Like all technology, social media is neutral but is best put to work in the service of building a better world."}
+    ],
+    "surprised" : [
+        { "author" : "Denis Waitley", "quote" : "Expect the best, plan for the worst, and prepare to be surprised."},
+        { "author" : "Thomas Hardy", "quote" : "Time changes everything except something within us which is always surprised by change."},
+        { "author" : "Jose Ortega Y Gasset", "quote" : "To be surprised, to wonder, is to begin to understand."}
+    ],
+    "sad" : [
+        { "author" : "Alyssa Milano", "quote" : "First, accept sadness. Realize that without losing, winning isn't so great."},
+        { "author" : "Gloria Estefan", "quote" : "The sad truth is that opportunity doesn't knock twice."},
+        { "author" : "Alfred Austin", "quote" : "Tears are the summer showers to the soul."}
+    ],
+    "fearful" : [
+        { "author" : "Sun Tzu", "quote" : "If you know the enemy and know yourself you need not fear the results of a hundred battles."},
+        { "author" : "Franklin D. Roosevelt", "quote" : "The only thing we have to fear is fear itself."},
+        { "author" : "Zach Wamp", "quote" : "We should not be afraid to go into a new era, to leave the old beyond."}
+    ],
+    "disgusted" : [
+        { "author" : "Marcus Tullius Cicero", "quote" : "The greatest pleasures are only narrowly separated from disgust."},
+        { "author" : "Petrarch", "quote" : "Sameness is the mother of disgust, variety the cure."},
+        { "author" : "Sophocies", "quote" : "All is disgust when a man leaves his own nature and does what is unfit."}
+    ]
+}
