@@ -9,7 +9,7 @@
     <h4 class="text-center header-main">Look at your <span class="text-purple">Camera!</span></h4>
 </h4>
     <h4 class="text-center header-normal mb-0">
-        Try to fit your lovely face inside the highlighted box to get the best results!
+        Fit your face inside the center box to get the best results!
     </h4>
 </div>
 
@@ -22,7 +22,14 @@
             <span class="position-absolute top-0 start-0 mt-2 ms-2" style="width:35px;z-index:1;">
                 <svg class="w-6 h-6" fill="rgba(86, 59, 255)" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path></svg>
             </span>
-            <span id="camInfo" class="position-absolute top-0 start-0 mt-3 ms-5" style="z-index:1">Loading Model...</span>
+
+            <!-- Camera/Model Info -->
+            <div id="camInfoWrap" class="position-absolute top-0 end-0 mt-2 me-2 bg-purple py-1 px-3 rounded-pill" style="z-index:1">
+                <span id="camInfo" class="text-white">
+                    Starting Camera...
+                </span>
+            </div>
+
             <div id="faceBorder" class="face-border blinking position-absolute top-50 start-50 translate-middle"></div>
             <video id="video">Video stream not available.</video>
         </div>
@@ -185,8 +192,6 @@
 
             var data = canvas.toDataURL('image/png')
             photo.setAttribute('src', data)
-            // document.getElementById("imageData").setAttribute('value', data)
-            // document.getElementById("hiddenForm").submit()
             upload_to_server(data)
         } else {
             clearphoto()
@@ -202,13 +207,13 @@
             headers: {'Content-Type': 'image/png'},
             body: canvasData
         }).then((response) => {
-            return response.text();
+            return response.text()
         }).then((html) => {
             if (html.includes('error-message')) {
                 document.body.innerHTML = html
                 // [Hacky] else face detection does not work
                 setTimeout(() => {
-                    window.location.reload();
+                    window.location.reload()
                 }, 2000)
             } else {
                 document.body.innerHTML = html
@@ -218,75 +223,114 @@
 
     // Run the initiateCamera process once loading is complete.
     window.addEventListener('load', startStream, false)
+    
+    
+    // ===== Using the Face Detection model ===== //
+    
+    var video = document.getElementById('video')
+    
+    video.addEventListener('play', () => {
+        
+        // [Hacky] else it'll show error in faceapi.createCanvasFromMedia(video)
+        new Promise((res, rej) => {
+            setTimeout(() => { res() }, 100)
+        }).then(() => {
+            const canvas = faceapi.createCanvasFromMedia(video)
+            document.getElementById('videoWrap').append(canvas)
+            
+            const displaySize = { width: video.width, height: video.height }
+            faceapi.matchDimensions(canvas, displaySize)
+            
+            var no_detection_count = 0
+            var prev_detection = null
+            var detect_interval_ms = 125
+            var perfect_lapse_ms = 0
+            var picture_taken = false
+            
+            var face_border = document.getElementById('faceBorder')
+            var camInfoWrap = document.getElementById('camInfoWrap')
+            var camInfo = document.getElementById('camInfo')
+    
+            camInfo.innerHTML = 'Loading Model...'
+    
+            function automatic_capture(lapse) {
+    
+                if (!picture_taken && lapse) {
+                    perfect_lapse_ms += detect_interval_ms
+                    
+                    perfect_lapse_ms <= 5000 ? camInfo.innerHTML = 'Predicting in 1' : ''
+                    perfect_lapse_ms <= 4000 ? camInfo.innerHTML = 'Predicting in 2' : ''
+                    perfect_lapse_ms <= 3000 ? camInfo.innerHTML = 'Predicting in 3' : ''
+                    perfect_lapse_ms <= 2000 ? camInfo.innerHTML = 'Predicting in 4' : ''
+                    perfect_lapse_ms <= 1000 ? camInfo.innerHTML = 'Predicting in 5' : ''
+                    
+                    if (perfect_lapse_ms >= 5000) {
+                        takepicture()
+                        picture_taken = true
+                        perfect_lapse_ms = 0
+                    }
+                } else if (!lapse) {
+                    perfect_lapse_ms = 0
+                }
+            }
+    
+            // Detect for every interval
+            setInterval(async () => {
+            
+                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+                
+                let resizedDetections = faceapi.resizeResults(detections, displaySize)
+    
+                // Prevent detector from turning on and off
+                if (resizedDetections.length == 0 && prev_detection != null) {
+                    no_detection_count += 1
+                    no_detection_count <= 10 ? resizedDetections = prev_detection : ''
+                } else if (resizedDetections.length >= 1) {
+                    no_detection_count = 0
+                    prev_detection = resizedDetections
+                }
+    
+                canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+                faceapi.draw.drawDetections(canvas, resizedDetections)
+                
+                // Check if the center of the detection box is within a threshold of the center box
+                if (typeof resizedDetections[0] != 'undefined') {
+                    const dtc = resizedDetections[0]._box
+                    let dc_x, dc_y
+        
+                    dc_x = (dtc._width / 2) + dtc._x
+                    dc_y = (dtc._height / 2) + dtc._y
+                    
+                    distance = ((400 - dc_x) ** 2 + (300 - dc_y) ** 2) ** 0.5
+        
+                    if (distance < 100) {
+                        face_border.style.borderColor = '#00CC00'
+                        face_border.classList.remove("blinking")
+                        camInfoWrap.style.backgroundColor = '#00CC00'
+                        camInfo.innerHTML = 'Perfect'
+                        automatic_capture(lapse=true)
+                    } else {
+                        face_border.style.borderColor = '#FF9200'
+                        face_border.classList.add("blinking")
+                        camInfoWrap.style.backgroundColor = '#FF9200'
+                        camInfo.innerHTML = 'Move to the Box'
+                        automatic_capture(lapse=false)
+                    }
+                    
+                } else {
+                    face_border.style.borderColor = '#FF0000'
+                    face_border.classList.add("blinking")
+                    camInfoWrap.style.backgroundColor = '#FF0000'
+                    camInfo.innerHTML = 'No face detected'
+                    automatic_capture(lapse=false)
+                }
+    
+            }, detect_interval_ms)
+        })
+    
+    }, false)
 })()
 
-var video = document.getElementById('video');
-
-video.addEventListener('play', () => {
-    
-    // [Hacky] else it'll show error in faceapi.createCanvasFromMedia(video)
-    new Promise((res, rej) => {
-        setTimeout(() => { res() }, 100)
-    }).then(() => {
-        const canvas = faceapi.createCanvasFromMedia(video)
-        document.getElementById('videoWrap').append(canvas)
-        
-        const displaySize = { width: video.width, height: video.height }
-        faceapi.matchDimensions(canvas, displaySize)
-        
-        var no_detection_count = 0
-        var prev_detection = null
-        var face_border = document.getElementById('faceBorder')
-        
-        var camInfo = document.getElementById('camInfo')
-
-        setInterval(async () => {
-        
-            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-            
-            let resizedDetections = faceapi.resizeResults(detections, displaySize)
-
-            // Prevent detector from turning on and off
-            if (resizedDetections.length == 0 && prev_detection != null) {
-                no_detection_count += 1
-                no_detection_count <= 10 ? resizedDetections = prev_detection : ''
-            } else if (resizedDetections.length >= 1) {
-                no_detection_count = 0
-                prev_detection = resizedDetections
-            }
-
-            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
-            faceapi.draw.drawDetections(canvas, resizedDetections)
-            
-            // Check if the center of the detection box is within a threshold of the center box
-            if (typeof resizedDetections[0] != 'undefined') {
-                const dtc = resizedDetections[0]._box
-                let dc_x, dc_y
-    
-                dc_x = (dtc._width / 2) + dtc._x
-                dc_y = (dtc._height / 2) + dtc._y
-                
-                distance = ((400 - dc_x) ** 2 + (300 - dc_y) ** 2) ** 0.5
-    
-                if (distance < 100) {
-                    face_border.style.borderColor = '#00FF00'
-                    face_border.classList.remove("blinking")
-                } else {
-                    face_border.style.borderColor = '#FF9200'
-                    face_border.classList.add("blinking")
-                }
-                
-            } else {
-                face_border.style.borderColor = '#FF0000'
-                face_border.classList.add("blinking")
-            }
-
-            camInfo.style.display = 'none'
-
-        }, 125)
-    })
-
-}, false)
 </script>
 
 <style>
