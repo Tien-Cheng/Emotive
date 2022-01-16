@@ -1,0 +1,31 @@
+<header class="d-flex align-items-center justify-content-between px-4 py-3">
+    <a href="/" style="text-decoration: none;"><h2 class="logo {{'text-white' if page == 'home' else 'text-purple'}} mb-0"">Emotive</h2></a>
+
+    {% if not userInfo.is_anonymous %}
+        {% if page != 'home' %}
+            <div class="nav d-flex">
+                <a href="/predict" class="{{'fw-bold text-purple' if page == 'predict' else 'text-dark'}} pt-2">Photo</a>
+                <a href="/dashboard" class="{{'fw-bold text-purple' if page == 'dashboard' else 'text-dark'}} pt-2">Dashboard</a>
+                <a href="/history" class="{{'fw-bold text-purple' if page in ['history','results'] else 'text-dark'}} pt-2">History</a>
+                <a href="/logout" class="text-dark mr-0 pt-2">Logout</a>
+                
+                <div class="rounded-pill bg-purple-light py-2 px-3 fw-bold">
+                    <span>Hi, </span>
+                    <span class="text-purple">{{userInfo.username}}!</span>
+                </div>
+            </div>
+        {% else %}
+            <div class="nav d-flex text-white">
+                <a href="/predict" class="text-white pt-2">Photo</a>
+                <a href="/dashboard" class="text-white pt-2">Dashboard</a>
+                <a href="/history" class="text-white pt-2">History</a>
+                <a href="/logout" class="text-white mr-0 pt-2">Logout</a>
+                
+                <div class="rounded-pill bg-white-light py-2 px-3 fw-bold">
+                    <span>Hi, </span>
+                    <span class="text-white">{{userInfo.username}}!</span>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+</header>

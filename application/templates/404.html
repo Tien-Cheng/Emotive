@@ -1,0 +1,16 @@
+<!-- Inherits from layout.html -->
+{% extends "layout.html" %}
+
+<!-- The block content replace the one encapsulated in  layout.html -->
+{% block content %}
+
+<h1 class="text-center mt-3"><span class="fw-bold text-purple">404</span>: Page Not Found!</h1>
+<h4 class="text-center">The page you're looking for <span class="fw-bold">does not exist</span>.</h4>
+
+<div class="mx-auto mt-5" style="width: 200px;">
+    <a href="/">
+        <button class="btn bg-purple text-white w-100">Go Back Home</button>
+    </a>
+</div>
+
+{% endblock %}
