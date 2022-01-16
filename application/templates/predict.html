@@ -22,7 +22,7 @@
             <span class="position-absolute top-0 start-0 mt-2 ms-2" style="width:35px;z-index:1;">
                 <svg class="w-6 h-6" fill="rgba(86, 59, 255)" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path></svg>
             </span>
-            <span id="modelInfo" class="position-absolute top-0 start-0 mt-3 ms-5" style="z-index:1">Loading Model...</span>
+            <span id="camInfo" class="position-absolute top-0 start-0 mt-3 ms-5" style="z-index:1">Loading Model...</span>
             <div id="faceBorder" class="face-border blinking position-absolute top-50 start-50 translate-middle"></div>
             <video id="video">Video stream not available.</video>
         </div>
@@ -80,11 +80,10 @@
 <script src="{{ url_for('static', filename='js/face-api.min.js') }}"></script>
 
 <script>
-/*
-    References:
-    * https://github.com/mdn/samples-server/tree/master/s/webrtc-capturestill
-    * https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Taking_still_photos
-*/
+// References:
+// * https://github.com/mdn/samples-server/tree/master/s/webrtc-capturestill
+// * https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Taking_still_photos
+
 (function () {
     // The width and height of the captured photo. We will set the
     // width to the value defined here, but the height will be
@@ -239,7 +238,7 @@ video.addEventListener('play', () => {
         var prev_detection = null
         var face_border = document.getElementById('faceBorder')
         
-        var modelInfo = document.getElementById('modelInfo')
+        var camInfo = document.getElementById('camInfo')
 
         setInterval(async () => {
         
@@ -262,20 +261,18 @@ video.addEventListener('play', () => {
             // Check if the center of the detection box is within a threshold of the center box
             if (typeof resizedDetections[0] != 'undefined') {
                 const dtc = resizedDetections[0]._box
-                let dc_x, dc_y, ct_x, ct_y;
+                let dc_x, dc_y
     
                 dc_x = (dtc._width / 2) + dtc._x
                 dc_y = (dtc._height / 2) + dtc._y
-                ct_x = 400
-                ct_y = 300
                 
-                distance = ((ct_x - dc_x) ** 2 + (ct_y - dc_y) ** 2) ** 0.5
+                distance = ((400 - dc_x) ** 2 + (300 - dc_y) ** 2) ** 0.5
     
                 if (distance < 100) {
                     face_border.style.borderColor = '#00FF00'
                     face_border.classList.remove("blinking")
                 } else {
-                    face_border.style.borderColor = '#FF0000'
+                    face_border.style.borderColor = '#FF9200'
                     face_border.classList.add("blinking")
                 }
                 
@@ -284,7 +281,7 @@ video.addEventListener('play', () => {
                 face_border.classList.add("blinking")
             }
 
-            modelInfo.style.display = 'none'
+            camInfo.style.display = 'none'
 
         }, 125)
     })
