@@ -157,9 +157,7 @@
                 // Firefox currently has a bug where the height can't be read from
                 // the video, so we will make assumptions if this happens.
 
-                if (isNaN(height)) {
-                    height = width / (4 / 3)
-                }
+                isNaN(height) ? height = width / (4 / 3) : ''
 
                 video.setAttribute('width', width)
                 video.setAttribute('height', height)
@@ -228,6 +226,7 @@
                 }, 2000)
             } else {
                 document.body.innerHTML = html
+                video.srcObject.getTracks().forEach(track => track.stop())
             }
         }).catch(err => console.log(err))
     }
@@ -265,18 +264,18 @@
     
             camInfo.innerHTML = 'Loading Model...'
             
-            function automatic_capture(lapse) {
+            function automatic_capture(lapse, t=3) {
                 
                 if (!picture_taken && lapse && auto_capture == 'ON') {
                     perfect_lapse_ms += detect_interval_ms
                     
-                    perfect_lapse_ms <= 5000 ? camInfo.innerHTML = 'Predicting in 1' : ''
-                    perfect_lapse_ms <= 4000 ? camInfo.innerHTML = 'Predicting in 2' : ''
-                    perfect_lapse_ms <= 3000 ? camInfo.innerHTML = 'Predicting in 3' : ''
-                    perfect_lapse_ms <= 2000 ? camInfo.innerHTML = 'Predicting in 4' : ''
-                    perfect_lapse_ms <= 1000 ? camInfo.innerHTML = 'Predicting in 5' : ''
+                    for (let i=1; i<=t; i++) {
+                        perfect_lapse_ms <= (-i+t+1)*1000
+                            ? camInfo.innerHTML = `Predicting in ${i}`
+                            : ''
+                    }
                     
-                    if (perfect_lapse_ms >= 5000) {
+                    if (perfect_lapse_ms >= t*1000) {
                         takepicture()
                         picture_taken = true
                         perfect_lapse_ms = 0

@@ -6,20 +6,44 @@
 
 <div class="mt-4">
     <!-- Past Predictions -->
-    <div>
+    <div class="mb-4">
         <h4 class="text-center header-main mb-0">Your <span class="text-purple">Past</span> Emotions</h4>
     </div>
     
     {% if history.pages > 0 %}
         <div class="text-end mx-auto" style="width: 1300px">
             <div class="btn-group me-5" role="group">
+
+                <!-- Emotion filter (Incomplete) -->
+                <div class="dropdown text-end me-2">
+                    <form action="/history" method="post" enctype="application/x-www-form-urlencoded">
+                        <button class="btn bg-purple text-white dropdown-toggle" type="button" id="history-entries-toggle"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="fw-bold">{{per_page}}</span> emotion filter
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="history-entries-toggle">
+                            {% for e in ('angry','fearful','surprised','happy','neutral','sad','disgusted') %}
+                            <li>
+                                <div class="form-check mx-2 my-1">
+                                    <input class="form-check-input me-2" type="checkbox" id="Checkbox" value="{{e}}" style="width: 20px; height: 20px;">
+                                    <label class="form-check-label" for="Checkbox">{{e.capitalize()}}</label>
+                                </div>
+                            </li>
+                            {% endfor %}
+                            <li class="text-end">
+                                <button class="btn btn-secondary me-2">Filter</button>
+                            </li>
+                        </ul>
+                    </form>
+                </div>
+
                 <div class="dropdown text-end me-2">
                     <button class="btn bg-purple text-white dropdown-toggle" type="button" id="history-entries-toggle"
                         data-bs-toggle="dropdown" aria-expanded="false">
                         <span class="fw-bold">{{per_page}}</span> entries per page
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="history-entries-toggle">
-                        {% for entries in (3, 6, 9, 12, 18, 30, 60, 90) %}
+                        {% for entries in (3,6,9,12,18,30,60,90) %}
                         <li>
                             <a class="dropdown-item {% if per_page == entries %}active{% endif %}"
                                 href="{{ url_for('history', page=1, col_sort=col_sort, dir='desc' if desc else 'asc', per_page=entries) }}">
@@ -29,6 +53,7 @@
                         {% endfor %}
                     </ul>
                 </div>
+
                 <div class="dropdown text-end">
                     <button class="btn bg-purple text-white dropdown-toggle" type="button" id="history-sort-toggle"
                         data-bs-toggle="dropdown" aria-expanded="false">

@@ -3,12 +3,11 @@
 ### Front-End To do:
 
 * History Filter Function
-
   * Prediction Score
   * Emotion
   * Date Range
-* Connect to TF Server to get Prediction
 
+* Connect to TF Server to get Prediction
   * Send the black and white (resized?) cropped photo
 
 ### General To Do:
@@ -20,3 +19,4 @@
 ### Errors/Bugs
 
 * Starting face detection is very slow
+* Camera cannot CORS (localhost x 127.0.0.1)
