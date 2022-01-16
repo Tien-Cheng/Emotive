@@ -19,5 +19,4 @@
 
 ### Errors/Bugs
 
-* Bounding Box is
 * Starting face detection is very slow

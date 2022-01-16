@@ -155,6 +155,10 @@ hr {
     background-color: #00B358;
 }
 
+.bg-grey {
+    background-color: #6C757D;
+}
+
 .border-color {
     color: #999;
 }

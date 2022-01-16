@@ -10,21 +10,29 @@
         <h4 class="text-center header-main">Your <span class="text-purple">Emotive</span> Dashboard</h4>
     </div>
     
-    <div class="dropdown text-end mx-auto dashboard-dropdown mb-2">
-        <button class="btn bg-purple text-white dropdown-toggle" type="button" id="history-entries-toggle"
-            data-bs-toggle="dropdown" aria-expanded="false">
-            {{date_filter}}
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="history-entries-toggle">
-            {% for entries in ('1 Day', '3 Days', '1 Week', '1 Month', '3 Months', '6 Months', '1 Year', 'All Time') %}
-            <li>
-                <a class="dropdown-item {% if per_page == entries %}active{% endif %}"
-                    href="{{ url_for('dashboard', date_filter=entries) }}">
-                    {{ entries }}
-                </a>
-            </li>
-            {% endfor %}
-        </ul>
+    <div class="dashboard-options d-flex align-items-center justify-content-end mb-2 mx-auto">
+        <a href="/set-cookie?autoCapture={{'ON' if autoCapture == 'OFF' else 'OFF'}}">
+            <button class="btn bg-{{'grey' if autoCapture == 'OFF' else 'green'}} text-white me-4">
+                Auto Capture: <span class="fw-bold">{{autoCapture}}</span>
+            </button>
+        </a>
+    
+        <div class="dropdown">
+            <button class="btn bg-purple text-white dropdown-toggle" type="button" id="history-entries-toggle"
+                data-bs-toggle="dropdown" aria-expanded="false">
+                Filter: <span class="fw-bold">{{date_filter}}</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="history-entries-toggle">
+                {% for entries in ('1 Day', '3 Days', '1 Week', '1 Month', '3 Months', '6 Months', '1 Year', 'All Time') %}
+                <li>
+                    <a class="dropdown-item {% if per_page == entries %}active{% endif %}"
+                        href="{{ url_for('dashboard', date_filter=entries) }}">
+                        {{ entries }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
 
     <!-- Dashboard Wrapper -->
@@ -173,12 +181,9 @@
 
 <style>
 
-    .dashboard-dropdown {
+    .dashboard-options {
         width: 1300px;
-    }
-
-    .dashboard-dropdown > button {
-        margin-right: 0.5rem;
+        padding-right: 10px;
     }
 
     .dashboard {

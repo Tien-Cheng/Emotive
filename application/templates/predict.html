@@ -37,12 +37,22 @@
         <!-- Action Buttons -->
         <div class="d-flex justify-content-center">
 
+            <!-- Toggle AutoCapture -->
+            <a href="/set-cookie?autoCapture={{'ON' if autoCapture == 'OFF' else 'OFF'}}&page=predict" class="mt-4" style="text-decoration: none;">
+                <button class="btn bg-{{'grey' if autoCapture == 'OFF' else 'green'}} text-white d-flex align-items-center">
+                    <span style="width: 30px">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clip-rule="evenodd"></path></svg>
+                    </span>
+                    <span class="ms-2 me-1">Auto Capture: <span class="fw-bold">{{autoCapture}}</span></span>
+                </button>
+            </a>
+
             <!-- Upload Photo -->
-            <button class="btn bg-purple text-white d-flex align-items-center mt-4 me-4" data-bs-toggle="modal" data-bs-target="#exampleModal">
+            <button class="btn bg-purple text-white d-flex align-items-center mt-4 mx-4" data-bs-toggle="modal" data-bs-target="#exampleModal">
                 <span style="width: 30px">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
                 </span>
-                <span class="mx-3">Upload Photo</span>
+                <span class="ms-2 me-1">Upload Photo</span>
             </button>
 
             <!-- Modal -->
@@ -73,7 +83,7 @@
                 <span style="width: 30px">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path></svg>
                 </span>
-                <span class="mx-3">Predict Photo</span>
+                <span class="ms-2 me-1">Take Photo</span>
             </button>
         </div>
 
@@ -246,16 +256,17 @@
             var detect_interval_ms = 125
             var perfect_lapse_ms = 0
             var picture_taken = false
+            var auto_capture = '{{autoCapture}}'
             
             var face_border = document.getElementById('faceBorder')
             var camInfoWrap = document.getElementById('camInfoWrap')
             var camInfo = document.getElementById('camInfo')
     
             camInfo.innerHTML = 'Loading Model...'
-    
+            
             function automatic_capture(lapse) {
-    
-                if (!picture_taken && lapse) {
+                
+                if (!picture_taken && lapse && auto_capture == 'ON') {
                     perfect_lapse_ms += detect_interval_ms
                     
                     perfect_lapse_ms <= 5000 ? camInfo.innerHTML = 'Predicting in 1' : ''
@@ -304,14 +315,16 @@
                     distance = ((400 - dc_x) ** 2 + (300 - dc_y) ** 2) ** 0.5
         
                     if (distance < 100) {
-                        face_border.style.borderColor = '#00CC00'
+                        face_border.style.borderColor = '#00B358'
                         face_border.classList.remove("blinking")
-                        camInfoWrap.style.backgroundColor = '#00CC00'
+                        face_border.classList.remove("blinking-fast")
+                        camInfoWrap.style.backgroundColor = '#00B358'
                         camInfo.innerHTML = 'Perfect'
                         automatic_capture(lapse=true)
                     } else {
                         face_border.style.borderColor = '#FF9200'
                         face_border.classList.add("blinking")
+                        face_border.classList.remove("blinking-fast")
                         camInfoWrap.style.backgroundColor = '#FF9200'
                         camInfo.innerHTML = 'Move to the Box'
                         automatic_capture(lapse=false)
@@ -319,7 +332,8 @@
                     
                 } else {
                     face_border.style.borderColor = '#FF0000'
-                    face_border.classList.add("blinking")
+                    face_border.classList.remove("blinking")
+                    face_border.classList.add("blinking-fast")
                     camInfoWrap.style.backgroundColor = '#FF0000'
                     camInfo.innerHTML = 'No face detected'
                     automatic_capture(lapse=false)
@@ -360,6 +374,11 @@
     .blinking {
         opacity: 1;
         animation: blinker 0.5s linear infinite;
+    }
+
+    .blinking-fast {
+        opacity: 1;
+        animation: blinker 0.2s linear infinite;
     }
 
     @keyframes blinker {

@@ -53,10 +53,15 @@ def get_history(user_id, page=None, per_page=9, order_by="predicted_on", desc=Tr
     except Exception as error:
         flash(str(error), "danger")
 
-
 # Sorting the prediction dictionary by probabilities
 def sort_prediction(pred_dict):
-    return [(k.capitalize(),v) for k, v in sorted(pred_dict.items(), key=lambda item: item[1], reverse=True)]
+    return [
+        (k.capitalize(),v) for k, v in sorted(
+            pred_dict.items(),
+            key=lambda item: item[1],
+            reverse=True
+        )
+    ]
 
 # Quotes
 with open('./application/static/quotes.json') as f:
@@ -126,15 +131,10 @@ def plot_history(history):
 # http://127.0.0.1:5000/set-cookie?page=history&currency=USD
 @app.route('/set-cookie', methods=['GET'])
 def change_cookie():
-    currency = request.args.get('currency')
-    current_page = request.args.get('page')
-
-    if current_page == 'results':
-        result_id = request.args.get('result_id')
-        resp = make_response(redirect(url_for(current_page, history_id = result_id)))
-    else:
-        resp = make_response(redirect(url_for(current_page)))
-    resp.set_cookie('currency', currency)
+    auto_capture = request.args.get('autoCapture')
+    redir_page = request.args.get('page', 'dashboard')
+    resp = make_response(redirect(url_for(redir_page)))
+    resp.set_cookie('autoCapture', auto_capture)
     return resp
 
 @app.route('/', methods=['GET'])
@@ -146,6 +146,7 @@ def homepage():
         userInfo=current_user,
     ))
 
+    resp.set_cookie('autoCapture','ON')
     return resp
 
 # For new users who want to register
@@ -234,7 +235,7 @@ def login():
         form=form
     ))
 
-    resp.set_cookie('currency', 'INR')
+    resp.set_cookie('autoCapture', 'ON')
 
     return resp
 
@@ -350,11 +351,12 @@ def predict():
             userInfo=current_user,
             history=history
         )
-    
+
     return render_template(
         "predict.html",
         page='predict',
         userInfo=current_user,
+        autoCapture=request.cookies.get('autoCapture')
     )
 
 # Contains the history of the predictions in table form
@@ -536,6 +538,7 @@ def dashboard():
         data_usage_mb=data_usage_mb,
         html_file_path=plot_history(history),
         quote=global_quotes[emotion_counter[0][0].lower()][np.random.randint(0,3)],
+        autoCapture=request.cookies.get('autoCapture'),
         date_filter=date_filter
     )
 
