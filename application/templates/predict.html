@@ -1,0 +1,241 @@
+<!-- Inherits from layout.html -->
+{% extends "layout.html" %}
+
+<!-- The block content replace the one encapsulated in  layout.html -->
+{% block content %}
+
+<!-- Greetings -->
+<div class="mb-4">
+    <h4 class="text-center header-main">Look at your <span class="text-purple">Camera!</span></h4>
+</h4>
+    <h4 class="text-center header-normal mb-0">
+        Try to fit your lovely face inside the highlighted box to get the best results!
+    </h4>
+</div>
+
+<!-- Camera -->
+<div class="mx-auto">
+    <div class="camera d-flex flex-column align-items-center justify-content-center">
+
+        <!-- Camera Inputs -->
+        <div class="video-wrap position-relative crop overflow-hidden rounded-3 d-flex flex-column align-items-center justify-content-center">
+            <span class="position-absolute top-0 start-0 mt-2 ms-2" style="width:35px;z-index:1;">
+                <svg class="w-6 h-6" fill="rgba(86, 59, 255, 0.4)" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path></svg>
+            </span>
+            <div class="face-border position-absolute top-50 start-50 translate-middle"></div>
+            <video id="video">Video stream not available.</video>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-center">
+
+            <!-- Upload Photo -->
+            <button class="btn bg-purple text-white d-flex align-items-center mt-4 me-4" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <span style="width: 30px">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                </span>
+                <span class="mx-3">Upload Photo</span>
+            </button>
+
+            <!-- Modal -->
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Upload Photo</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="/predict" method="post" enctype="multipart/form-data" class="mt-3">
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <input class="form-control" type="file" name="file" id="formFile">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn bg-purple text-white">Predict</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Take Photo -->
+            <button id="startbutton" class="btn bg-purple text-white d-flex align-items-center mt-4">
+                <span style="width: 30px">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path></svg>
+                </span>
+                <span class="mx-3">Predict Photo</span>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Placeholder -->
+    <canvas id="canvas" class="d-none"></canvas>
+    <div class="output d-none"><img id="photo" alt="The screen capture will appear in this box."></div>
+</div>
+
+<script>
+/*
+    References:
+    * https://github.com/mdn/samples-server/tree/master/s/webrtc-capturestill
+    * https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Taking_still_photos
+*/
+(function () {
+    // The width and height of the captured photo. We will set the
+    // width to the value defined here, but the height will be
+    // calculated based on the aspect ratio of the input stream.
+
+    var width = 800    // We will scale the photo width to this
+    var height = 0     // This will be computed based on the input stream
+
+    // |streaming| indicates whether or not we're currently streaming
+    // video from the camera. Obviously, we start at false.
+
+    var streaming = false
+
+    // The various HTML elements we need to configure or control. These
+    // will be set by the startup() function.
+
+    var video = null
+    var canvas = null
+    var photo = null
+    var startbutton = null
+
+    function startup() {
+        video = document.getElementById('video')
+        canvas = document.getElementById('canvas')
+        photo = document.getElementById('photo')
+        startbutton = document.getElementById('startbutton')
+
+        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+            .then(function (stream) {
+                video.srcObject = stream
+                video.play()
+            })
+            .catch(function (err) {
+                console.log("An error occurred: " + err)
+            })
+
+        video.addEventListener('canplay', function (ev) {
+            if (!streaming) {
+
+                height = video.videoHeight / (video.videoWidth / width)
+
+                // Firefox currently has a bug where the height can't be read from
+                // the video, so we will make assumptions if this happens.
+
+                if (isNaN(height)) {
+                    height = width / (4 / 3)
+                }
+
+                video.setAttribute('width', width)
+                video.setAttribute('height', height)
+                canvas.setAttribute('width', width)
+                canvas.setAttribute('height', height)
+                streaming = true
+            }
+        }, false)
+
+        startbutton.addEventListener('click', function (ev) {
+            takepicture()
+            ev.preventDefault()
+        }, false)
+
+        clearphoto()
+    }
+
+    // Fill the photo with an indication that none has been
+    // captured.
+
+    function clearphoto() {
+        var context = canvas.getContext('2d')
+        context.fillStyle = "#AAA"
+        context.fillRect(0, 0, canvas.width, canvas.height)
+
+        var data = canvas.toDataURL('image/png')
+        photo.setAttribute('src', data)
+    }
+
+    // Capture a photo by fetching the current contents of the video
+    // and drawing it into a canvas, then converting that to a PNG
+    // format data URL. By drawing it on an offscreen canvas and then
+    // drawing that to the screen, we can change its size and/or apply
+    // other changes before drawing it.
+
+    function takepicture() {
+        var context = canvas.getContext('2d')
+        if (width && height) {
+            canvas.width = width
+            canvas.height = height
+            context.drawImage(video, 0, 0, width, height)
+
+            var data = canvas.toDataURL('image/png')
+            photo.setAttribute('src', data)
+            // document.getElementById("imageData").setAttribute('value', data)
+            // document.getElementById("hiddenForm").submit()
+            upload_to_server(data)
+        } else {
+            clearphoto()
+        }
+    }
+
+    // https://stackoverflow.com/questions/48619138/how-to-upload-canvas-and-image-to-the-server-with-javascript
+    function upload_to_server(canvasData) {
+
+        return fetch('http://127.0.0.1:5000/predict', {
+            method: 'POST',
+            headers: {'Content-Type': 'image/png'},
+            body: canvasData
+        }).then((response) => {
+            return response.text();
+        }).then((html) => {
+            if (html.includes('error-message')) {
+                document.body.innerHTML = html
+                streaming = false
+                startup()
+            } else {
+                document.body.innerHTML = html
+            }
+        }).catch(err => console.log(err))
+    }
+
+    // Set up our event listener to run the startup process
+    // once loading is complete.
+    window.addEventListener('load', startup, false)
+})()
+</script>
+
+<style>
+    #video {
+        -webkit-transform: scaleX(-1);
+        transform: scaleX(-1);
+    }
+
+    .video-wrap {
+        width: 800px;
+        box-shadow: 0px 3px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .crop {
+        height: 450px;
+    }
+
+    .face-border {
+        height: 300px;
+        width: 300px;
+        border: 5px dashed rgba(86, 59, 255, 0.5);
+        border-radius: 10px;
+        z-index: 2;
+        animation: blinker 1s linear infinite;
+    }
+
+    @keyframes blinker {
+        50% {
+          opacity: 0;
+        }
+    }
+</style>
+
+{% endblock %}
