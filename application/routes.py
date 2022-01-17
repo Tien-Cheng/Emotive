@@ -136,8 +136,6 @@ def plot_history(history):
 
 # ===== Routes ===== >>>
 
-# Currency route
-# http://127.0.0.1:5000/set-cookie?page=history&currency=USD
 @app.route('/set-cookie', methods=['GET'])
 def change_cookie():
     auto_capture = request.args.get('autoCapture')
@@ -326,35 +324,35 @@ def predict():
 
         # === Send image to TF model server ===>
 
-        # Post request does not work
-        data_instance = np.array(Image.open(f"{getcwd()}/application/static/uploads/faces/20220115140238092389_0_face.png").resize((48,48)))
-        # From shape of (48,48) to (1,48,48,1)
-        data_instance = np.expand_dims(np.expand_dims(data_instance, axis=2), axis=0)
+        # # Waiting for AI model to output an array of 7 probability scores
+        # data_instance = np.array(Image.open(f"{getcwd()}/application/static/uploads/faces/20220115140238092389_0_face.png").resize((48,48)))
+        # # From shape of (48,48) to (1,48,48,1)
+        # data_instance = np.expand_dims(np.expand_dims(data_instance, axis=2), axis=0)
 
-        json_response = requests.post(
-            'https://doaa-2072-staging.herokuapp.com/v1/models/img_classifier:predict',
-            data = json.dumps({
-                "signature_name" : "serving_default",
-                "instances" : data_instance.tolist() 
-            }),
-            headers = {
-                "content-type": "application/json" 
-            }
-        )
+        # json_response = requests.post(
+        #     'https://doaa-2072-staging.herokuapp.com/v1/models/img_classifier:predict',
+        #     data = json.dumps({
+        #         "signature_name" : "serving_default",
+        #         "instances" : data_instance.tolist() 
+        #     }),
+        #     headers = {
+        #         "content-type": "application/json" 
+        #     }
+        # )
 
-        predictions = json.loads(json_response.text)["predictions"]
-        print('\n\n', predictions, '\n\n', np.array(predictions).shape, '\n\n')
+        # predictions = json.loads(json_response.text)["predictions"]
+        # print('\n\n', predictions, '\n\n', np.array(predictions).shape, '\n\n')
 
         # === Save image metadata to database ===>
 
         prediction_to_db = {
-            'happy'     : np.random.random(), # Temporary: Populate DB
-            'neutral'   : np.random.random(), # Temporary: Populate DB
-            'surprised' : np.random.random(), # Temporary: Populate DB
-            'sad'       : np.random.random(), # Temporary: Populate DB
-            'fearful'   : np.random.random(), # Temporary: Populate DB
-            'disgusted' : np.random.random(), # Temporary: Populate DB
-            'angry'     : np.random.random()  # Temporary: Populate DB
+            'happy'     : np.random.random(), # Temporary: Artificial Data
+            'neutral'   : np.random.random(), # Temporary: Artificial Data
+            'surprised' : np.random.random(), # Temporary: Artificial Data
+            'sad'       : np.random.random(), # Temporary: Artificial Data
+            'fearful'   : np.random.random(), # Temporary: Artificial Data
+            'disgusted' : np.random.random(), # Temporary: Artificial Data
+            'angry'     : np.random.random()  # Temporary: Artificial Data
         }
 
         prediction = Prediction(

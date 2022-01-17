@@ -3,10 +3,8 @@
 ### Front-End To do:
 
 * History Filter Function
-
-  * Date Range (If got time)
+  * Date Range (If got time, else, replicate the dashboard)
 * Connect to TF Server to get Prediction
-
   * Send the black and white (resized?) cropped photo
 
 ### General To Do:
@@ -17,6 +15,11 @@
 
 ### Errors/Bugs
 
-* Starting face detection is very slow
-* Camera cannot CORS (localhost x 127.0.0.1)
-* Filtering other options other than emotion will reset to show 7 emotions
+* Camera with FaceAPI detection is slow
+* Camera cannot CORS (i.e. localhost to 127.0.0.1)
+* When loading the model, the buttons cannot be pressed
+
+### Edit in face-api.min.js
+
+1. Change rectangular border colour to theme purple
+2. Remove confidence score due to mirroring bug: From `new sv(n,{label:r})` to `new sv(n,{label:""})`

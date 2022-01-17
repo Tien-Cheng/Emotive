@@ -136,8 +136,10 @@
                             <embed src="{{url_for('static', filename='file.html')}}" type="text/html" width="733" height="234">
                         </div>
                         {% endif %}
-                        <div class="position-absolute top-0 start-0 p-3 pb-1 bg-white rounded-3">
-                            <h5 class="fw-bold mb-0">Your Activity</h5>
+                        <div class="position-absolute top-0 start-0 ps-3 pt-3">
+                            <h5 class="fw-bold mb-0" style="text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;">
+                                Your Activity
+                            </h5>
                         </div>
                     </div>
                 </div>
@@ -167,10 +169,14 @@
                 <h5 class="fw-bold mb-3">Emotion Counter</h5>
                 <div class="d-flex flex-column align-items-center justify-content-between">
                     {% for (emotion, count) in emotion_counter %}
-                        <div class="icon-text-item py-2 rounded d-flex align-items-center justify-content-start">
-                            <img class="mx-2" src="{{url_for('static', filename='assets/' + emotion + '.svg')}}" alt="emotion-icons">
-                            <p class="fw-bold text-secondary mb-0"><span class="text-dark">{{count}}</span> {{emotion}}</p>
-                        </div>
+                    <div class="icon-text-item py-2 rounded">
+                        <a href="/history?c{{emotion.capitalize()}}=1" style="text-decoration: none;">
+                            <div class="d-flex align-items-center justify-content-start">
+                                <img class="mx-2" src="{{url_for('static', filename='assets/' + emotion + '.svg')}}" alt="emotion-icons">
+                                <p class="fw-bold text-secondary mb-0"><span class="text-dark">{{count}}</span> {{emotion}}</p>
+                            </div>
+                        </a>
+                    </div>
                     {% endfor %}
                 </div>
             </div>

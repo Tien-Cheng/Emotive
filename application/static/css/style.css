@@ -81,18 +81,18 @@
     font-weight: 400;
 }
 
-/* ===== Others ===== */
+/* ===== Headers & Navigation ===== */
 
 hr {
     color: #999999;
 }
 
-.nav>a {
+.nav > a {
     text-decoration: none;
     margin-right: 30px;
 }
 
-.nav>a:hover {
+.nav > a:hover {
     color: #563BFF;
     text-decoration: underline;
 }
@@ -111,6 +111,8 @@ hr {
     padding: 0.75em 1em;
     z-index: 5;
 }
+
+/* ===== Buttons ===== */
 
 .btn {
     transition: all 300ms;
@@ -137,9 +139,7 @@ hr {
     color: white;
 }
 
-.predict-btn {
-    width: 120px;
-}
+/* ===== Forms ===== */
 
 .form-control:focus-within {
     border: 1px solid #563BFF;
@@ -161,7 +161,7 @@ hr {
     margin-right: 800px;
 }
 
-.intro-message-wrapper>p {
+.intro-message-wrapper > p {
     line-height: 200%;
     font-size: 1.2em;
 }
