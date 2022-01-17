@@ -299,8 +299,6 @@ def predict():
             flash("You did not use WebCam or File Upload!", "red")
             return redirect(url_for('predict'))
         
-        # === Send image to TF model server ===>
-        # https://doaa-2072-staging.herokuapp.com/v1/models/img_classifier:predict
 
         # === Crop the faces in the image ===>
 
@@ -312,9 +310,7 @@ def predict():
 
         if len(faces) < 1:
 
-            # Remove image from directory
-            os.remove(imgPath)
-
+            os.remove(imgPath) # Remove image from directory
             flash("No face detected!", "red")
             return redirect(url_for('predict'))
 
@@ -322,14 +318,32 @@ def predict():
             cv2.rectangle(image, (x-5, y-5), (x+w+5, y+h+5), (255,59,86), 2)
             roi_color = gray[y:y + h, x:x + w]
 
-            # cropped black and white face
+            # Cropped black and white face
             cv2.imwrite(
                 f'./application/static/uploads/faces/{upload_time}_{idx}_face.png', 
                 roi_color
             )
-        
-        # # full image with rectangle box on face
-        # cv2.imwrite(f'./application/static/uploads/{upload_time}_detected.png', image)
+
+        # === Send image to TF model server ===>
+
+        # Post request does not work
+        data_instance = np.array(Image.open(f"{getcwd()}/application/static/uploads/faces/20220115140238092389_0_face.png").resize((48,48)))
+        # From shape of (48,48) to (1,48,48,1)
+        data_instance = np.expand_dims(np.expand_dims(data_instance, axis=2), axis=0)
+
+        json_response = requests.post(
+            'https://doaa-2072-staging.herokuapp.com/v1/models/img_classifier:predict',
+            data = json.dumps({
+                "signature_name" : "serving_default",
+                "instances" : data_instance.tolist() 
+            }),
+            headers = {
+                "content-type": "application/json" 
+            }
+        )
+
+        predictions = json.loads(json_response.text)["predictions"]
+        print('\n\n', predictions, '\n\n', np.array(predictions).shape, '\n\n')
 
         # === Save image metadata to database ===>
 
@@ -373,27 +387,6 @@ def predict():
 # Contains the history of the predictions in table form
 @app.route("/history", methods=["GET"])
 def history():
-
-    # Move this to /predict after the model is fixed
-
-    # Post request does not work
-    data_instance = np.array(Image.open(f"{getcwd()}/application/static/uploads/faces/20220115140238092389_0_face.png").resize((48,48)))
-    # From shape of (48,48) to (1,48,48,1)
-    data_instance = np.expand_dims(np.expand_dims(data_instance, axis=2), axis=0)
-
-    json_response = requests.post(
-        'https://doaa-2072-staging.herokuapp.com/v1/models/img_classifier:predict',
-        data = json.dumps({
-            "signature_name" : "serving_default",
-            "instances" : data_instance.tolist() 
-        }),
-        headers = {
-            "content-type": "application/json" 
-        }
-    )
-
-    predictions = json.loads(json_response.text)["predictions"]
-    print('\n\n', predictions, '\n\n', np.array(predictions).shape, '\n\n')
     
     # Unauthenticated user will be redirected to login
     if not current_user.is_authenticated:
@@ -604,7 +597,7 @@ def dashboard():
 
 
 
-# ========= Users =========
+# ========= APIs Users =========
 
 # API: add users
 @app.route("/api/user-add", methods=['POST'])

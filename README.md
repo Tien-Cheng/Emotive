@@ -19,3 +19,4 @@
 
 * Starting face detection is very slow
 * Camera cannot CORS (localhost x 127.0.0.1)
+* Filtering other options other than emotion will reset to show 7 emotions

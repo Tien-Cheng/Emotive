@@ -45,6 +45,7 @@
                     </form>
                 </div>
 
+                <!-- Entries per Page -->
                 <div class="dropdown text-end me-2">
                     <button class="btn bg-purple text-white dropdown-toggle" type="button" id="history-entries-toggle"
                         data-bs-toggle="dropdown" aria-expanded="false">
@@ -54,7 +55,8 @@
                         {% for entries in (3,6,9,12,18,30,60,90) %}
                         <li>
                             <a class="dropdown-item {% if per_page == entries %}active{% endif %}"
-                                href="{{ url_for('history', page=1, col_sort=col_sort, dir='desc' if desc else 'asc', per_page=entries) }}">
+                                href="{{ url_for('history', page=1, col_sort=col_sort, dir='desc' if desc else 'asc', per_page=entries,
+                                         cAngry=emotion_filter['angry'], cFearful=emotion_filter['fearful'], cSurprised=emotion_filter['surprised'], cHappy=emotion_filter['happy'], cNeutral=emotion_filter['neutral'], cSad=emotion_filter['sad'], cDisgusted=emotion_filter['disgusted']) }}">
                                 {{ entries }}
                             </a>
                         </li>
@@ -62,17 +64,19 @@
                     </ul>
                 </div>
 
+                <!-- Sort by Columns -->
                 <div class="dropdown text-end">
                     <button class="btn bg-purple text-white dropdown-toggle" type="button" id="history-sort-toggle"
                         data-bs-toggle="dropdown" aria-expanded="false">
-                        Sort by <span class="fw-bold">{{col_sort}}</spanc>
+                        Sort by <span class="fw-bold">{{col_sort}}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="history-sort-toggle">
                         {% for column in history.query.statement.selected_columns.keys()|sort %}
                         {% if column not in ["user_id", "id"] %}
                         <li>
                             <a class="dropdown-item {% if column == col_sort %}active{% endif %}"
-                                href="{{ url_for('history', page=history.page, col_sort=column, dir='asc' if column == col_sort and desc else 'desc') }}">
+                                href="{{ url_for('history', page=history.page, col_sort=column, dir='asc' if column == col_sort and desc else 'desc', per_page=per_page,
+                                         cAngry=emotion_filter['angry'], cFearful=emotion_filter['fearful'], cSurprised=emotion_filter['surprised'], cHappy=emotion_filter['happy'], cNeutral=emotion_filter['neutral'], cSad=emotion_filter['sad'], cDisgusted=emotion_filter['disgusted']) }}">
                                 {{ column | replace("_", " ")|title }}
                                 {% if (desc and column == col_sort) or (column != col_sort) %}
                                     &#8595;
@@ -134,18 +138,21 @@
         <nav aria-label="Navigation">
             <ul class="pagination justify-content-center">
                 <li class="page-item {% if history.page == 1 %}disabled{% endif %}"><a
-                        href="{{ url_for('history', page=history.prev_num, col_sort=col_sort, dir='desc' if desc else 'asc', per_page=per_page) }}"
+                        href="{{ url_for('history', page=history.prev_num, col_sort=col_sort, dir='desc' if desc else 'asc', per_page=per_page,
+                                 cAngry=emotion_filter['angry'], cFearful=emotion_filter['fearful'], cSurprised=emotion_filter['surprised'], cHappy=emotion_filter['happy'], cNeutral=emotion_filter['neutral'], cSad=emotion_filter['sad'], cDisgusted=emotion_filter['disgusted']) }}"
                         class="page-link" tabindex="-1">&laquo;</a></li>
                 {% for page in history.iter_pages() %}
                 <li class="page-item {{'active' if page == history.page}}">
                     <a class="page-link"
-                       href="{{ url_for('history', page=page, col_sort=col_sort, dir='desc' if desc else 'asc', per_page=per_page) }}">
+                       href="{{ url_for('history', page=page, col_sort=col_sort, dir='desc' if desc else 'asc', per_page=per_page,
+                                cAngry=emotion_filter['angry'], cFearful=emotion_filter['fearful'], cSurprised=emotion_filter['surprised'], cHappy=emotion_filter['happy'], cNeutral=emotion_filter['neutral'], cSad=emotion_filter['sad'], cDisgusted=emotion_filter['disgusted']) }}">
                        {{ page if page else '...' }}
                     </a>
                 </li>
                 {% endfor %}
                 <li class="page-item page-item-next {{ 'disabled' if history.page == history.pages }}">
-                    <a href="{{ url_for('history', page=history.next_num, col_sort=col_sort, dir='desc' if desc else 'asc', per_page=per_page) }}"
+                    <a href="{{ url_for('history', page=history.next_num, col_sort=col_sort, dir='desc' if desc else 'asc', per_page=per_page,
+                                cAngry=emotion_filter['angry'], cFearful=emotion_filter['fearful'], cSurprised=emotion_filter['surprised'], cHappy=emotion_filter['happy'], cNeutral=emotion_filter['neutral'], cSad=emotion_filter['sad'], cDisgusted=emotion_filter['disgusted']) }}"
                        class="page-link">
                        &raquo;
                     </a>
