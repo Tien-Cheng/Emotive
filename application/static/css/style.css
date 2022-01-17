@@ -1,106 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
-hr {
-    color: #999999;
-}
-
-.nav > a {
-    text-decoration: none;
-    margin-right: 30px;
-}
-
-.nav > a:hover {
-    color: #563BFF;
-    text-decoration: underline;
-}
-
-.content {
-    min-height: calc(100vh - 72px);
-    background-color: #F6F8FA;
-}
-
-.error-message {
-    position: absolute;
-    top: 80px;
-    right: 0;
-    width: fit-content;
-    height: fit-content;
-    padding: 0.75em 1em;
-    z-index: 1;
-}
-
-.btn {
-    transition: all 300ms;
-}
-
-.btn:hover {
-    transform: scale(1.01);
-}
-
-.btn:focus {
-    box-shadow: 0 0 0 3px #4037f43d;
-}
-
-.custom-btn {
-    height: fit-content;
-    padding-top: 7px;
-    padding-bottom: 7px;
-    color: white;
-    transition: all 300ms;
-}
-
-.custom-btn:hover {
-    transform: scale(1.05);
-    color: white;
-}
-
-.predict-btn {
-    width: 120px;
-}
-
-.form-control:focus-within {
-    border: 1px solid #563BFF;
-    box-shadow: 0px 0px 0px 1px #563BFF;
-}
-
-.intro {
-    position: relative;
-    height: calc(100vh - 122.6px);
-}
-
-.intro-message-wrapper {
-    max-width: 400px;
-    height: 280px;
-    position: absolute;
-    top: 50% - 50%;
-    left: 50% - 50%;
-    margin-top: 100px;
-    margin-right: 800px;
-}
-
-.intro-message-wrapper > p {
-    line-height: 200%;
-    font-size: 1.2em;
-}
-
-.intro-btn {
-    width: 180px;
-    background-color: #655CFF;
-}
-
-.intro-btn:hover {
-    box-shadow: 0px 0px 0px 2px #fff;
-}
-
-.intro-image {
-    position: absolute;
-    top: 50% - 50%;
-    left: 50% - 50%;
-    margin-left: 500px;
-    margin-top: -10px;
-    z-index: -1;
-}
-
 /* ======= Theme ======= */
 
 .logo {
@@ -180,4 +79,144 @@ hr {
 .header-normal {
     font-size: 20px;
     font-weight: 400;
+}
+
+/* ===== Others ===== */
+
+hr {
+    color: #999999;
+}
+
+.nav>a {
+    text-decoration: none;
+    margin-right: 30px;
+}
+
+.nav>a:hover {
+    color: #563BFF;
+    text-decoration: underline;
+}
+
+.content {
+    min-height: calc(100vh - 72px);
+    background-color: #F6F8FA;
+}
+
+.error-message {
+    position: absolute;
+    top: 80px;
+    right: 0;
+    width: fit-content;
+    height: fit-content;
+    padding: 0.75em 1em;
+    z-index: 5;
+}
+
+.btn {
+    transition: all 300ms;
+}
+
+.btn:hover {
+    transform: scale(1.01);
+}
+
+.btn:focus {
+    box-shadow: 0 0 0 3px #4037f43d;
+}
+
+.custom-btn {
+    height: fit-content;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    color: white;
+    transition: all 300ms;
+}
+
+.custom-btn:hover {
+    transform: scale(1.05);
+    color: white;
+}
+
+.predict-btn {
+    width: 120px;
+}
+
+.form-control:focus-within {
+    border: 1px solid #563BFF;
+    box-shadow: 0px 0px 0px 1px #563BFF;
+}
+
+.intro {
+    position: relative;
+    height: calc(100vh - 122.6px);
+}
+
+.intro-message-wrapper {
+    max-width: 400px;
+    height: 280px;
+    position: absolute;
+    top: 50% - 50%;
+    left: 50% - 50%;
+    margin-top: 100px;
+    margin-right: 800px;
+}
+
+.intro-message-wrapper>p {
+    line-height: 200%;
+    font-size: 1.2em;
+}
+
+.intro-btn {
+    width: 180px;
+    background-color: #655CFF;
+}
+
+.intro-btn:hover {
+    box-shadow: 0px 0px 0px 2px #fff;
+}
+
+.intro-image {
+    position: absolute;
+    top: 50% - 50%;
+    left: 50% - 50%;
+    margin-left: 500px;
+    margin-top: -10px;
+    z-index: -1;
+}
+
+/* ===== Loader ===== */
+
+.loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(2);
+}
+
+.loading svg polyline {
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.loading svg polyline#back {
+    stroke: #655CFF;
+}
+
+.loading svg polyline#front {
+    stroke: #d5d2ff;
+    stroke-dasharray: 12, 36;
+    stroke-dashoffset: 48;
+    animation: dash 1s linear infinite;
+}
+
+@keyframes dash {
+    62.5% {
+        opacity: 0;
+    }
+
+    to {
+        stroke-dashoffset: 0;
+    }
 }

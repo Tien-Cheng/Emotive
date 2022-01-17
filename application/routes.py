@@ -345,7 +345,7 @@ def predict():
 
         prediction = Prediction(
             fk_user_id   = int(current_user.id),
-            emotion      = sort_prediction(prediction_to_db)[0][0],
+            emotion      = sort_prediction(prediction_to_db)[0][0].lower(),
             file_path    = str(f'{upload_time}.png'),
             prediction   = prediction_to_db,
             predicted_on = dt.now()
