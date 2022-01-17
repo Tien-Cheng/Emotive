@@ -8,8 +8,8 @@
 <div>
     <h4 class="header-main mb-4 d-flex justify-content-center">
         <span>Our AI thinks you're </span>
-        <span class="text-purple ms-2 d-flex align-items-center justify-content-center">{{history.prediction[0][0]}} 
-            <img class="ms-2" src="{{url_for('static', filename='assets/'+history.prediction[0][0]+'.svg')}}" alt="emotion-icons">
+        <span class="text-purple ms-2 d-flex align-items-center justify-content-center">{{history.emotion}} 
+            <img class="ms-2" src="{{url_for('static', filename='assets/'+history.emotion+'.svg')}}" alt="emotion-icons">
         </span>
     </h4>
 </div>

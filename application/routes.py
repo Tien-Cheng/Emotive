@@ -7,10 +7,13 @@ from flask_login import login_user, logout_user, current_user
 
 import os
 import cv2
+import json
 import plotly
 import urllib
+import requests
 import datetime
 import numpy as np
+from PIL import Image
 from os import getcwd
 import plotly.graph_objects as go
 from datetime import datetime as dt
@@ -297,8 +300,7 @@ def predict():
             return redirect(url_for('predict'))
         
         # === Send image to TF model server ===>
-
-
+        # https://doaa-2072-staging.herokuapp.com/v1/models/img_classifier:predict
 
         # === Crop the faces in the image ===>
 
@@ -331,18 +333,21 @@ def predict():
 
         # === Save image metadata to database ===>
 
+        prediction_to_db = {
+            'happy'     : np.random.random(), # Temporary: Populate DB
+            'neutral'   : np.random.random(), # Temporary: Populate DB
+            'surprised' : np.random.random(), # Temporary: Populate DB
+            'sad'       : np.random.random(), # Temporary: Populate DB
+            'fearful'   : np.random.random(), # Temporary: Populate DB
+            'disgusted' : np.random.random(), # Temporary: Populate DB
+            'angry'     : np.random.random()  # Temporary: Populate DB
+        }
+
         prediction = Prediction(
             fk_user_id   = int(current_user.id),
+            emotion      = sort_prediction(prediction_to_db)[0][0],
             file_path    = str(f'{upload_time}.png'),
-            prediction   = {
-                'happy'     : np.random.random(),
-                'neutral'   : np.random.random(),
-                'surprised' : np.random.random(),
-                'sad'       : np.random.random(),
-                'fearful'   : np.random.random(),
-                'disgusted' : np.random.random(),
-                'angry'     : np.random.random()
-            },
+            prediction   = prediction_to_db,
             predicted_on = dt.now()
         )
 
@@ -368,6 +373,27 @@ def predict():
 # Contains the history of the predictions in table form
 @app.route("/history", methods=["GET"])
 def history():
+
+    # Move this to /predict after the model is fixed
+
+    # Post request does not work
+    data_instance = np.array(Image.open(f"{getcwd()}/application/static/uploads/faces/20220115140238092389_0_face.png").resize((48,48)))
+    # From shape of (48,48) to (1,48,48,1)
+    data_instance = np.expand_dims(np.expand_dims(data_instance, axis=2), axis=0)
+
+    json_response = requests.post(
+        'https://doaa-2072-staging.herokuapp.com/v1/models/img_classifier:predict',
+        data = json.dumps({
+            "signature_name" : "serving_default",
+            "instances" : data_instance.tolist() 
+        }),
+        headers = {
+            "content-type": "application/json" 
+        }
+    )
+
+    predictions = json.loads(json_response.text)["predictions"]
+    print('\n\n', predictions, '\n\n', np.array(predictions).shape, '\n\n')
     
     # Unauthenticated user will be redirected to login
     if not current_user.is_authenticated:
@@ -539,6 +565,7 @@ def dashboard():
 
     data_usage_mb = 0
 
+    # Getting the right data
     for i, p in enumerate(history):
         history[i].prediction = sort_prediction(p.prediction)
 
