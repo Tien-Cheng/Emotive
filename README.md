@@ -3,11 +3,10 @@
 ### Front-End To do:
 
 * History Filter Function
-  * Prediction Score
-  * Emotion
-  * Date Range
 
+  * Date Range (If got time)
 * Connect to TF Server to get Prediction
+
   * Send the black and white (resized?) cropped photo
 
 ### General To Do:

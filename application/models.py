@@ -13,6 +13,7 @@ class Prediction(db.Model):
 
     id           = db.Column(db.Integer, primary_key=True, autoincrement=True)
     fk_user_id   = db.Column(db.Integer, db.ForeignKey('users.id'))
+    emotion      = db.Column(db.String)
     file_path    = db.Column(db.String, nullable=False)
     prediction   = db.Column(db.PickleType, nullable=False)
     predicted_on = db.Column(db.DateTime, nullable=False)
@@ -35,10 +36,16 @@ class Prediction(db.Model):
         if fk_user_id <= 0: raise AssertionError('Foreign Key User Id must be positive')
         return fk_user_id
 
+    @validates('emotion')
+    def validate_file_path(self, key, emotion):
+        if type(emotion) is not str: raise AssertionError('Emotion must be a String')
+        if len(emotion) <= 0: raise AssertionError('Emotion must not be empty')
+        return emotion
+
     @validates('file_path')
     def validate_file_path(self, key, file_path):
-        if type(file_path) is not str: raise AssertionError('Closest Car must be a String')
-        if len(file_path) <= 0: raise AssertionError('Closest Car must not be empty')
+        if type(file_path) is not str: raise AssertionError('File path must be a String')
+        if len(file_path) <= 0: raise AssertionError('File path must not be empty')
         return file_path
 
     # Validate PickleType here

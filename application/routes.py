@@ -18,6 +18,8 @@ from plotly.subplots import make_subplots
 
 # ===== Functions and Global variables ===== >>>
 
+emotion_list = ('angry','fearful','surprised','happy','neutral','sad','disgusted')
+
 # Create the database if not exist
 db.create_all()
 
@@ -33,17 +35,21 @@ def add_to_db(new_pred):
         return None
 
 # Getting the histories in pages
-def get_history(user_id, page=None, per_page=9, order_by="predicted_on", desc=True):
+def get_history(user_id, page=None, per_page=9, order_by="predicted_on", desc=True, emotion_filter=None):
     
     try:
         order_by = column(order_by)
         
-        if desc:
-            order_by = order_by.desc()
-        else:
-            order_by = order_by.asc()
+        if desc: order_by = order_by.desc()
+        else: order_by = order_by.asc()
         
-        results = db.session.query(Prediction).filter_by(fk_user_id=user_id).order_by(order_by)
+        if emotion_filter == None:
+            emotion_filter = emotion_list 
+
+        results = db.session.query(Prediction).filter(
+            Prediction.fk_user_id==user_id,
+            Prediction.emotion.in_(emotion_filter)
+        ).order_by(order_by)
 
         if page is None:
             return results.all()
@@ -82,7 +88,7 @@ def plot_history(history):
         'disgusted' : '#7F68F4'
     }
 
-    for emotion in ['disgusted','sad','neutral','happy','surprised','fearful','angry']:
+    for emotion in emotion_list:
 
         fig.add_trace(go.Histogram(
             name=emotion.capitalize(),
@@ -367,13 +373,37 @@ def history():
     if not current_user.is_authenticated:
         flash("Unauthorized: You're not logged in!", "red")
         return redirect(url_for('login'))
-    
+
     page = int(request.args.get("page", 1))
     per_page = int(request.args.get("per_page", 9))
     col_sort = request.args.get("col_sort", "predicted_on")
     desc = request.args.get("dir", "desc") == "desc"
     
-    history = get_history(current_user.id, page, per_page, col_sort, desc)
+    emotion_filter = {
+        'angry'     : 1,
+        'fearful'   : 1,
+        'surprised' : 1,
+        'happy'     : 1,
+        'neutral'   : 1,
+        'sad'       : 1,
+        'disgusted' : 1
+    }
+
+    req_dict_keys = request.args.keys()
+
+    # check if req_dict_keys does not contain all elements in emotion_list
+    if not all(f'c{el.capitalize()}' not in req_dict_keys for el in emotion_list):
+        for e in emotion_list:
+            emotion_filter[e] = int(request.args.get(f'c{e.capitalize()}', 0))
+
+    history = get_history(
+        current_user.id, 
+        page,
+        per_page,
+        col_sort,
+        desc,
+        [k for k,v in emotion_filter.items() if v == 1]
+    )
 
     for i, p in enumerate(history.items):
         history.items[i].prediction = sort_prediction(p.prediction)
@@ -386,6 +416,7 @@ def history():
         col_sort=col_sort,
         desc=desc,
         per_page=per_page,
+        emotion_filter=emotion_filter
     )
 
 # Delete history with id argument

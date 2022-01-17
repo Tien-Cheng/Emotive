@@ -14,24 +14,32 @@
         <div class="text-end mx-auto" style="width: 1300px">
             <div class="btn-group me-5" role="group">
 
-                <!-- Emotion filter (Incomplete) -->
+                <!-- Emotion Filter-->
                 <div class="dropdown text-end me-2">
-                    <form action="/history" method="post" enctype="application/x-www-form-urlencoded">
+                    <form action="/history" method="get" enctype="application/x-www-form-urlencoded">
                         <button class="btn bg-purple text-white dropdown-toggle" type="button" id="history-entries-toggle"
                             data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="fw-bold">{{per_page}}</span> emotion filter
+                            <span class="fw-bold">{{emotion_filter.values() | sum}}</span> emotion filter
                         </button>
+                        <input type="hidden" name="page" value="1">
+                        <input type="hidden" name="per_page" value="{{per_page}}">
+                        <input type="hidden" name="col_sort" value="{{col_sort}}">
+                        <input type="hidden" name="dir" value="desc">
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="history-entries-toggle">
-                            {% for e in ('angry','fearful','surprised','happy','neutral','sad','disgusted') %}
+                            {% for e, v in emotion_filter.items() %}
                             <li>
                                 <div class="form-check mx-2 my-1">
-                                    <input class="form-check-input me-2" type="checkbox" id="Checkbox" value="{{e}}" style="width: 20px; height: 20px;">
+                                    <input class="form-check-input me-2"
+                                           type="checkbox" id="Checkbox"
+                                           name="c{{e.capitalize()}}" value="1"
+                                           style="width: 20px; height: 20px;"
+                                           {% if v == 1 %} checked {% endif %} >
                                     <label class="form-check-label" for="Checkbox">{{e.capitalize()}}</label>
                                 </div>
                             </li>
                             {% endfor %}
                             <li class="text-end">
-                                <button class="btn btn-secondary me-2">Filter</button>
+                                <button class="btn btn-dark mx-2 mt-2" style="width: 140px;">Filter</button>
                             </li>
                         </ul>
                     </form>
@@ -132,7 +140,7 @@
                 <li class="page-item {{'active' if page == history.page}}">
                     <a class="page-link"
                        href="{{ url_for('history', page=page, col_sort=col_sort, dir='desc' if desc else 'asc', per_page=per_page) }}">
-                       {{ page }}
+                       {{ page if page else '...' }}
                     </a>
                 </li>
                 {% endfor %}
@@ -226,6 +234,17 @@
 
     .page-item-next a {
         color: #563BFF !important;
+    }
+
+    .form-check-input:checked {
+        background-color: #563BFF;
+        border-color: #563BFF;
+    }
+
+    .dropdown-item.active, .dropdown-item:active {
+        color: #fff;
+        text-decoration: none;
+        background-color: #563BFF;
     }
 
 </style>
