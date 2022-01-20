@@ -109,8 +109,9 @@
 <script src="{{ url_for('static', filename='js/face-api.min.js') }}"></script>
 
 <script>
+"use strict";
 
-    // References:
+// References:
 // * https://github.com/mdn/samples-server/tree/master/s/webrtc-capturestill
 // * https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Taking_still_photos
 
@@ -119,86 +120,86 @@
     // width to the value defined here, but the height will be
     // calculated based on the aspect ratio of the input stream.
 
-    var width = 800    // We will scale the photo width to this
-    var height = 0     // This will be computed based on the input stream
+    var width = 800;    // We will scale the photo width to this
+    var height = 0;     // This will be computed based on the input stream
 
     // |streaming| indicates whether or not we're currently streaming
     // video from the camera. Obviously, we start at false.
 
-    var streaming = false
+    var streaming = false;
 
     // The various HTML elements we need to configure or control. These
     // will be set by the initiateCamera() function.
 
-    var video = null
-    var canvas = null
-    var photo = null
-    var startbutton = null
+    var video = null;
+    var canvas = null;
+    var photo = null;
+    var startbutton = null;
 
-    var loader = document.getElementById('loader')
-    loader.style.display = 'none'
+    var loader = document.getElementById('loader');
+    loader.style.display = 'none';
 
     // Face API
     function startStream() {
         Promise.all([
             faceapi.loadTinyFaceDetectorModel('../static/models')
         ]).then(() => {
-            initiateCamera()
+            initiateCamera();
         }).catch(e => {
-            console.log(e)
-        })
+            console.log(e);
+        });
     }
 
     function initiateCamera() {
-        video = document.getElementById('video')
-        canvas = document.getElementById('canvas')
-        photo = document.getElementById('photo')
-        startbutton = document.getElementById('startbutton')
+        video = document.getElementById('video');
+        canvas = document.getElementById('canvas');
+        photo = document.getElementById('photo');
+        startbutton = document.getElementById('startbutton');
 
         navigator.mediaDevices.getUserMedia({ video: true, audio: false })
             .then(function (stream) {
-                video.srcObject = stream
-                video.play()
+                video.srcObject = stream;
+                video.play();
             })
             .catch(function (err) {
-                console.log("An error occurred: " + err)
-            })
+                console.log("An error occurred: " + err);
+            });
 
         video.addEventListener('canplay', function (ev) {
             if (!streaming) {
 
-                height = video.videoHeight / (video.videoWidth / width)
+                height = video.videoHeight / (video.videoWidth / width);
 
                 // Firefox currently has a bug where the height can't be read from
                 // the video, so we will make assumptions if this happens.
 
-                isNaN(height) ? height = width / (4 / 3) : ''
+                isNaN(height) ? height = width / (4 / 3) : '';
 
-                video.setAttribute('width', width)
-                video.setAttribute('height', height)
-                canvas.setAttribute('width', width)
-                canvas.setAttribute('height', height)
-                streaming = true
+                video.setAttribute('width', width);
+                video.setAttribute('height', height);
+                canvas.setAttribute('width', width);
+                canvas.setAttribute('height', height);
+                streaming = true;
             }
-        }, false)
+        }, false);
 
         startbutton.addEventListener('click', function (ev) {
-            takepicture()
-            ev.preventDefault()
-        }, false)
+            takepicture();
+            ev.preventDefault();
+        }, false);
 
-        clearphoto()
+        clearphoto();
     }
 
     // Fill the photo with an indication that none has been captured.
 
     function clearphoto() {
-        var context = canvas.getContext('2d')
-        context.fillStyle = "#AAA"
-        context.fillRect(0, 0, canvas.width, canvas.height)
+        var context = canvas.getContext('2d');
+        context.fillStyle = "#AAA";
+        context.fillRect(0, 0, canvas.width, canvas.height);
 
-        var data = canvas.toDataURL('image/png')
-        photo.setAttribute('src', data)
+        var data = canvas.toDataURL('image/png');
+        photo.setAttribute('src', data);
     }
 
     // Capture a photo by fetching the current contents of the video
@@ -208,18 +209,18 @@
     // other changes before drawing it.
 
     function takepicture() {
-        loader.style.display = 'block'
-        var context = canvas.getContext('2d')
+        loader.style.display = 'block';
+        var context = canvas.getContext('2d');
         if (width && height) {
-            canvas.width = width
-            canvas.height = height
-            context.drawImage(video, 0, 0, width, height)
+            canvas.width = width;
+            canvas.height = height;
+            context.drawImage(video, 0, 0, width, height);
 
-            var data = canvas.toDataURL('image/png')
-            photo.setAttribute('src', data)
-            upload_to_server(data)
+            var data = canvas.toDataURL('image/png');
+            photo.setAttribute('src', data);
+            upload_to_server(data);
         } else {
-            clearphoto()
+            clearphoto();
         }
     }
 
@@ -232,136 +233,137 @@
             headers: {'Content-Type': 'image/png'},
             body: canvasData
         }).then((response) => {
-            return response.text()
+            return response.text();
         }).then((html) => {
             if (html.includes('error-message')) {
-                document.body.innerHTML = html
+                document.body.innerHTML = html;
                 // [Hacky] else face detection does not work
                 setTimeout(() => {
-                    window.location.reload()
-                }, 2000)
+                    window.location.reload();
+                }, 2000);
             } else {
-                document.body.innerHTML = html
-                video.srcObject.getTracks().forEach(track => track.stop())
+                document.body.innerHTML = html;
+                video.srcObject.getTracks().forEach(track => track.stop());
             }
-        }).catch(err => console.log(err))
+        }).catch(err => console.log(err));
     }
 
     // Run the initiateCamera process once loading is complete.
-    window.addEventListener('load', startStream, false)
+    window.addEventListener('load', startStream, false);
     
     
     // ===== Using the Face Detection model ===== //
     
-    var video = document.getElementById('video')
+    var video = document.getElementById('video');
     
     video.addEventListener('play', () => {
         
         // [Hacky] else it'll show error in faceapi.createCanvasFromMedia(video)
         new Promise((res, rej) => {
-            setTimeout(() => { res() }, 100)
+            setTimeout(() => { res() }, 100);
         }).then(() => {
-            const canvas = faceapi.createCanvasFromMedia(video)
-            document.getElementById('videoWrap').append(canvas)
+            const canvas = faceapi.createCanvasFromMedia(video);
+            document.getElementById('videoWrap').append(canvas);
             
             const displaySize = { width: video.width, height: video.height }
-            faceapi.matchDimensions(canvas, displaySize)
+            faceapi.matchDimensions(canvas, displaySize);
             
-            var no_detection_count = 0
-            var prev_detection = null
-            var detect_interval_ms = 125
-            var perfect_lapse_ms = 0
-            var picture_taken = false
-            var auto_capture = '{{autoCapture}}'
+            var no_detection_count = 0;
+            var prev_detection = null;
+            var detect_interval_ms = 125;
+            var perfect_lapse_ms = 0;
+            var picture_taken = false;
+            var lapse = false;
+            var auto_capture = '{{autoCapture}}';
             
-            var face_border = document.getElementById('faceBorder')
-            var camInfoWrap = document.getElementById('camInfoWrap')
-            var camInfo = document.getElementById('camInfo')
+            var face_border = document.getElementById('faceBorder');
+            var camInfoWrap = document.getElementById('camInfoWrap');
+            var camInfo = document.getElementById('camInfo');
     
-            camInfo.innerHTML = 'Loading Model...'
+            camInfo.innerHTML = 'Loading Model...';
             
             // 'lapse' indicate if countdown should continue
             // 't' indicates the countdown time in seconda
             function automatic_capture(lapse, t=3) {
                 
                 if (!picture_taken && lapse && auto_capture == 'ON') {
-                    perfect_lapse_ms += detect_interval_ms
+                    perfect_lapse_ms += detect_interval_ms;
                     
                     for (let i=1; i<=t; i++) {
                         perfect_lapse_ms <= (-i+t+1)*1000
                             ? camInfo.innerHTML = `Predicting in ${i}`
-                            : ''
+                            : '';
                     }
                     
                     if (perfect_lapse_ms >= t*1000) {
-                        takepicture()
-                        picture_taken = true
-                        perfect_lapse_ms = 0
+                        takepicture();
+                        picture_taken = true;
+                        perfect_lapse_ms = 0;
                     }
                 } else if (!lapse) {
-                    perfect_lapse_ms = 0
+                    perfect_lapse_ms = 0;
                 }
             }
     
             // Detect for every interval
             setInterval(async () => {
             
-                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions());
                 
-                let resizedDetections = faceapi.resizeResults(detections, displaySize)
+                let resizedDetections = faceapi.resizeResults(detections, displaySize);
     
                 // Prevent detector from turning on and off
                 if (resizedDetections.length == 0 && prev_detection != null) {
-                    no_detection_count += 1
-                    no_detection_count <= 10 ? resizedDetections = prev_detection : ''
+                    no_detection_count += 1;
+                    no_detection_count <= 10 ? resizedDetections = prev_detection : '';
                 } else if (resizedDetections.length >= 1) {
-                    no_detection_count = 0
-                    prev_detection = resizedDetections
+                    no_detection_count = 0;
+                    prev_detection = resizedDetections;
                 }
     
-                canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
-                faceapi.draw.drawDetections(canvas, resizedDetections)
+                canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+                faceapi.draw.drawDetections(canvas, resizedDetections);
                 
                 // Check if the center of the detection box is within a threshold of the center box
                 if (typeof resizedDetections[0] != 'undefined') {
-                    const dtc = resizedDetections[0]._box
-                    let dc_x, dc_y
+                    const dtc = resizedDetections[0]._box;
+                    let dc_x, dc_y;
         
-                    dc_x = (dtc._width / 2) + dtc._x
-                    dc_y = (dtc._height / 2) + dtc._y
+                    dc_x = (dtc._width / 2) + dtc._x;
+                    dc_y = (dtc._height / 2) + dtc._y;
                     
-                    distance = ((400 - dc_x) ** 2 + (300 - dc_y) ** 2) ** 0.5
+                    let distance = ((400 - dc_x) ** 2 + (300 - dc_y) ** 2) ** 0.5;
         
                     if (distance < 100) {
-                        face_border.style.borderColor = '#00B358'
-                        face_border.classList.remove("blinking")
-                        face_border.classList.remove("blinking-fast")
-                        camInfoWrap.style.backgroundColor = '#00B358'
-                        camInfo.innerHTML = 'Perfect'
-                        automatic_capture(lapse=true)
+                        face_border.style.borderColor = '#00B358';
+                        face_border.classList.remove("blinking");
+                        face_border.classList.remove("blinking-fast");
+                        camInfoWrap.style.backgroundColor = '#00B358';
+                        camInfo.innerHTML = 'Perfect';
+                        automatic_capture(lapse=true);
                     } else {
-                        face_border.style.borderColor = '#FF9200'
-                        face_border.classList.add("blinking")
-                        face_border.classList.remove("blinking-fast")
-                        camInfoWrap.style.backgroundColor = '#FF9200'
-                        camInfo.innerHTML = 'Move to the Box'
-                        automatic_capture(lapse=false)
+                        face_border.style.borderColor = '#FF9200';
+                        face_border.classList.add("blinking");
+                        face_border.classList.remove("blinking-fast");
+                        camInfoWrap.style.backgroundColor = '#FF9200';
+                        camInfo.innerHTML = 'Move to the Box';
+                        automatic_capture(lapse=false);
                     }
                     
                 } else {
-                    face_border.style.borderColor = '#FF0000'
-                    face_border.classList.remove("blinking")
-                    face_border.classList.add("blinking-fast")
-                    camInfoWrap.style.backgroundColor = '#FF0000'
-                    camInfo.innerHTML = 'No face detected'
-                    automatic_capture(lapse=false)
+                    face_border.style.borderColor = '#FF0000';
+                    face_border.classList.remove("blinking");
+                    face_border.classList.add("blinking-fast");
+                    camInfoWrap.style.backgroundColor = '#FF0000';
+                    camInfo.innerHTML = 'No face detected';
+                    automatic_capture(lapse=false);
                 }
     
-            }, detect_interval_ms)
-        })
+            }, detect_interval_ms);
+        });
     
-    }, false)
-})()
+    }, false);
+})();
 
 </script>
 
