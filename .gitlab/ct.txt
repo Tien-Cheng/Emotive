@@ -1,0 +1,19 @@
+[<tag>]
+# --- Example ---
+# [<tag>] (If applied, this commit will...) <subject> (Max 72 char)
+# |<----   Preferably using up to 50 chars   --->|<------------------->|
+# Changes (If any)
+# Description (If any)
+#
+# --- Commit Tags ---
+# Tag can be
+#    feat     (new feature)
+#    fix      (bug fix)
+#    refactor (refactoring code)
+#    doc      (changes to documentation)
+#    test     (adding or refactoring tests; no production code change)
+#    version  (version bump/new release; no production code change)
+#    dbg      (Changes in debugging code/frameworks; no production code change)
+#    hack     (Temporary fix to make things move forward; please avoid it)
+#    WIP      (Work In Progress; for intermediate commits to keep patches reasonably sized)
+#    config   (changes default options)
