@@ -1,10 +1,12 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_cors import CORS
 import os
 
 # Create the Flask app
 app = Flask(__name__)
+CORS(app) # Enable CORS
 
 if "TESTING" in os.environ:
     app.config.from_envvar('TESTING')
