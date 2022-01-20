@@ -259,14 +259,13 @@ def predict():
 
     # Unauthenticated user will be redirected to login
     if not current_user.is_authenticated:
-        print("a")
         flash("Unauthorized: You're not logged in!", "red")
         return redirect(url_for('login'))
 
     if request.method == 'POST':
-        print("b")
         upload_time = dt.now().strftime('%Y%m%d%H%M%S%f')
-        imgPath = f"./application/static/uploads/{upload_time}.png"
+        imgName = f"{current_user.username.strip().replace(' ', '_')}_{upload_time}.png"
+        imgPath = f"./application/static/uploads/{imgName}"
 
         # Using file upload
         if 'file' in request.files.keys():
@@ -297,7 +296,6 @@ def predict():
         else:
             flash("You did not use WebCam or File Upload!", "red")
             return redirect(url_for('predict'))
-        print("c")
 
         # === Crop the faces in the image ===>
 
@@ -315,21 +313,21 @@ def predict():
 
         for idx, (x, y, w, h) in enumerate(faces): # TODO: Figure what to do when we have multiple faces
             cv2.rectangle(image, (x-5, y-5), (x+w+5, y+h+5), (255,59,86), 2)
-            roi_color = gray[y:y + h, x:x + w]
+            roi_gray = gray[y:y + h, x:x + w]
 
             # Cropped black and white face
             cv2.imwrite(
-                f'./application/static/uploads/faces/{upload_time}_{idx}_face.png', 
-                roi_color
+                f"./application/static/uploads/faces/{current_user.username.strip().replace(' ', '_')}_{upload_time}_{idx}_face.png", 
+                roi_gray
             )
-        print("d")
+        
         # === Send image to TF model server ===>
 
-        # # Waiting for AI model to output an array of 7 probability scores
-        data_instance = np.asarray(roi_color.resize((48,48)))
-        # # From shape of (48,48) to (1,48,48,1)
+        # Waiting for AI model to output an array of 7 probability scores
+        data_instance = np.asarray(Image.fromarray(roi_gray).resize((48,48)))
+        # From shape of (48,48) to (1,48,48,1)
         data_instance = np.expand_dims(np.expand_dims(data_instance, axis=2), axis=0)
-        print("e")
+        
         json_response = requests.post(
             'https://doaa-ca2-emotive.herokuapp.com/v1/models/img_classifier:predict',
             data = json.dumps({
@@ -337,10 +335,10 @@ def predict():
                 "instances" : data_instance.tolist() 
             }),
             headers = {
-                "content-type": "application/json" 
+                "content-type": "application/json"
             }
         )
-        print("f")
+        
         predictions = json.loads(json_response.text)["predictions"]
         print('\n\n', predictions, '\n\n', np.array(predictions).shape, '\n\n')
 
@@ -349,13 +347,15 @@ def predict():
         prediction_to_db = {
             expression : probability for expression, probability in zip([
                 "angry", "disgusted", "fearful", "happy", "neutral", "sad", "surprised"
-            ], predictions)
+            ], predictions[0])
         }
+
+        print(prediction_to_db)
 
         prediction = Prediction(
             fk_user_id   = int(current_user.id),
             emotion      = sort_prediction(prediction_to_db)[0][0].lower(),
-            file_path    = str(f'{upload_time}.png'),
+            file_path    = str(imgName),
             prediction   = prediction_to_db,
             predicted_on = dt.now()
         )
@@ -364,7 +364,7 @@ def predict():
         history = Prediction.query.filter_by(id=pred_id).first()
 
         history.prediction = sort_prediction(history.prediction)
-        print("Done")
+        
         return render_template(
             "result.html",
             page="results",
