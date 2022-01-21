@@ -52,46 +52,48 @@
                             <div class="carousel-inner">
                                 
                                 {% for emotion, history in est_face.items() %}
-                                    <div class="carousel-item {{'active' if emotion == 'happy'}}">
-                                        <h5 class="fw-bold">Your <span class="text-purple">Most {{emotion.capitalize()}}</span> Face</h5>
-                                        <div class="d-flex align-items-center justify-content-center">
-                                            <div class="item-wrapper rounded overflow-hidden m-3 p-0 bg-white d-flex align-items-center justify-content-between">
-                            
-                                                <!-- Thumbnail -->
-                                                <div class="thumbnail" style="background-image: url({{url_for('static', filename='uploads/' + history.file_path)}})"></div>
-                                                
-                                                <!-- Information -->
-                                                <div class="thumbnail-info p-2 ps-3 position-relative d-flex flex-column align-items-start justify-content-between">
+                                    {% if history %}
+                                        <div class="carousel-item {{'active' if emotion == 'happy'}}">
+                                            <h5 class="fw-bold">Your <span class="text-purple">Most {{emotion.capitalize()}}</span> Face</h5>
+                                            <div class="d-flex align-items-center justify-content-center">
+                                                <div class="item-wrapper rounded overflow-hidden m-3 p-0 bg-white d-flex align-items-center justify-content-between">
+                                
+                                                    <!-- Thumbnail -->
+                                                    <div class="thumbnail" style="background-image: url({{url_for('static', filename='images/' + history.file_path)}})"></div>
                                                     
-                                                    <!-- Emotion Icon -->
-                                                    <img class="position-absolute top-0 end-0 m-2" src="{{url_for('static', filename='assets/' + emotion + '.svg')}}" alt="emotion-icons">
-                                                    
-                                                    <div>
-                                                        <h4 class="mb-0 fw-bold">{{(history.prediction[0][1]*100) | round(precision=1)}}%</h4>
-                                                        <p class="mb-0 fw-bold text-secondary">{{history.predicted_on.strftime('%H:%M %a %d %b %Y')}}</p>
-                                                    </div>
-                                                    
-                                                    <!-- Action Buttons -->
-                                                    <div class="d-flex align-items-center justify-content-end w-100">
-                                                        <a href="/history/{{history.id}}" class="action-btn action-view d-flex align-items-center justify-content-center me-2">
-                                                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                <path d="M10 12C10.5304 12 11.0391 11.7893 11.4142 11.4142C11.7893 11.0391 12 10.5304 12 10C12 9.46957 11.7893 8.96086 11.4142 8.58579C11.0391 8.21071 10.5304 8 10 8C9.46957 8 8.96086 8.21071 8.58579 8.58579C8.21071 8.96086 8 9.46957 8 10C8 10.5304 8.21071 11.0391 8.58579 11.4142C8.96086 11.7893 9.46957 12 10 12Z" fill="#E5E5E5"/>
-                                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M0.458008 10C1.73201 5.943 5.52201 3 10 3C14.478 3 18.268 5.943 19.542 10C18.268 14.057 14.478 17 10 17C5.52201 17 1.73201 14.057 0.458008 10ZM14 10C14 11.0609 13.5786 12.0783 12.8284 12.8284C12.0783 13.5786 11.0609 14 10 14C8.93914 14 7.92173 13.5786 7.17158 12.8284C6.42143 12.0783 6.00001 11.0609 6.00001 10C6.00001 8.93913 6.42143 7.92172 7.17158 7.17157C7.92173 6.42143 8.93914 6 10 6C11.0609 6 12.0783 6.42143 12.8284 7.17157C13.5786 7.92172 14 8.93913 14 10Z" fill="#E5E5E5"/>
-                                                            </svg>
-                                                        </a>
-                                                        <form name="deleteHistory" action="/history/delete?id={{history.id}}" method="post">
-                                                            <button class="action-btn action-trash d-flex align-items-center justify-content-center">
+                                                    <!-- Information -->
+                                                    <div class="thumbnail-info p-2 ps-3 position-relative d-flex flex-column align-items-start justify-content-between">
+                                                        
+                                                        <!-- Emotion Icon -->
+                                                        <img class="position-absolute top-0 end-0 m-2" src="{{url_for('static', filename='assets/' + emotion + '.svg')}}" alt="emotion-icons">
+                                                        
+                                                        <div>
+                                                            <h4 class="mb-0 fw-bold">{{(history.prediction[0][1]*100) | round(precision=1)}}%</h4>
+                                                            <p class="mb-0 fw-bold text-secondary">{{history.predicted_on.strftime('%H:%M %a %d %b %Y')}}</p>
+                                                        </div>
+                                                        
+                                                        <!-- Action Buttons -->
+                                                        <div class="d-flex align-items-center justify-content-end w-100">
+                                                            <a href="/history/{{history.id}}" class="action-btn action-view d-flex align-items-center justify-content-center me-2">
                                                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M9 2C8.81434 2.0001 8.63237 2.05188 8.47447 2.14955C8.31658 2.24722 8.18899 2.38692 8.106 2.553L7.382 4H4C3.73478 4 3.48043 4.10536 3.29289 4.29289C3.10536 4.48043 3 4.73478 3 5C3 5.26522 3.10536 5.51957 3.29289 5.70711C3.48043 5.89464 3.73478 6 4 6V16C4 16.5304 4.21071 17.0391 4.58579 17.4142C4.96086 17.7893 5.46957 18 6 18H14C14.5304 18 15.0391 17.7893 15.4142 17.4142C15.7893 17.0391 16 16.5304 16 16V6C16.2652 6 16.5196 5.89464 16.7071 5.70711C16.8946 5.51957 17 5.26522 17 5C17 4.73478 16.8946 4.48043 16.7071 4.29289C16.5196 4.10536 16.2652 4 16 4H12.618L11.894 2.553C11.811 2.38692 11.6834 2.24722 11.5255 2.14955C11.3676 2.05188 11.1857 2.0001 11 2H9ZM7 8C7 7.73478 7.10536 7.48043 7.29289 7.29289C7.48043 7.10536 7.73478 7 8 7C8.26522 7 8.51957 7.10536 8.70711 7.29289C8.89464 7.48043 9 7.73478 9 8V14C9 14.2652 8.89464 14.5196 8.70711 14.7071C8.51957 14.8946 8.26522 15 8 15C7.73478 15 7.48043 14.8946 7.29289 14.7071C7.10536 14.5196 7 14.2652 7 14V8ZM12 7C11.7348 7 11.4804 7.10536 11.2929 7.29289C11.1054 7.48043 11 7.73478 11 8V14C11 14.2652 11.1054 14.5196 11.2929 14.7071C11.4804 14.8946 11.7348 15 12 15C12.2652 15 12.5196 14.8946 12.7071 14.7071C12.8946 14.5196 13 14.2652 13 14V8C13 7.73478 12.8946 7.48043 12.7071 7.29289C12.5196 7.10536 12.2652 7 12 7Z" fill="#E5E5E5"/>
-                                                                </svg>                                        
-                                                            </button>
-                                                        </form>
+                                                                    <path d="M10 12C10.5304 12 11.0391 11.7893 11.4142 11.4142C11.7893 11.0391 12 10.5304 12 10C12 9.46957 11.7893 8.96086 11.4142 8.58579C11.0391 8.21071 10.5304 8 10 8C9.46957 8 8.96086 8.21071 8.58579 8.58579C8.21071 8.96086 8 9.46957 8 10C8 10.5304 8.21071 11.0391 8.58579 11.4142C8.96086 11.7893 9.46957 12 10 12Z" fill="#E5E5E5"/>
+                                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M0.458008 10C1.73201 5.943 5.52201 3 10 3C14.478 3 18.268 5.943 19.542 10C18.268 14.057 14.478 17 10 17C5.52201 17 1.73201 14.057 0.458008 10ZM14 10C14 11.0609 13.5786 12.0783 12.8284 12.8284C12.0783 13.5786 11.0609 14 10 14C8.93914 14 7.92173 13.5786 7.17158 12.8284C6.42143 12.0783 6.00001 11.0609 6.00001 10C6.00001 8.93913 6.42143 7.92172 7.17158 7.17157C7.92173 6.42143 8.93914 6 10 6C11.0609 6 12.0783 6.42143 12.8284 7.17157C13.5786 7.92172 14 8.93913 14 10Z" fill="#E5E5E5"/>
+                                                                </svg>
+                                                            </a>
+                                                            <form name="deleteHistory" action="/history/delete?id={{history.id}}" method="post">
+                                                                <button class="action-btn action-trash d-flex align-items-center justify-content-center">
+                                                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M9 2C8.81434 2.0001 8.63237 2.05188 8.47447 2.14955C8.31658 2.24722 8.18899 2.38692 8.106 2.553L7.382 4H4C3.73478 4 3.48043 4.10536 3.29289 4.29289C3.10536 4.48043 3 4.73478 3 5C3 5.26522 3.10536 5.51957 3.29289 5.70711C3.48043 5.89464 3.73478 6 4 6V16C4 16.5304 4.21071 17.0391 4.58579 17.4142C4.96086 17.7893 5.46957 18 6 18H14C14.5304 18 15.0391 17.7893 15.4142 17.4142C15.7893 17.0391 16 16.5304 16 16V6C16.2652 6 16.5196 5.89464 16.7071 5.70711C16.8946 5.51957 17 5.26522 17 5C17 4.73478 16.8946 4.48043 16.7071 4.29289C16.5196 4.10536 16.2652 4 16 4H12.618L11.894 2.553C11.811 2.38692 11.6834 2.24722 11.5255 2.14955C11.3676 2.05188 11.1857 2.0001 11 2H9ZM7 8C7 7.73478 7.10536 7.48043 7.29289 7.29289C7.48043 7.10536 7.73478 7 8 7C8.26522 7 8.51957 7.10536 8.70711 7.29289C8.89464 7.48043 9 7.73478 9 8V14C9 14.2652 8.89464 14.5196 8.70711 14.7071C8.51957 14.8946 8.26522 15 8 15C7.73478 15 7.48043 14.8946 7.29289 14.7071C7.10536 14.5196 7 14.2652 7 14V8ZM12 7C11.7348 7 11.4804 7.10536 11.2929 7.29289C11.1054 7.48043 11 7.73478 11 8V14C11 14.2652 11.1054 14.5196 11.2929 14.7071C11.4804 14.8946 11.7348 15 12 15C12.2652 15 12.5196 14.8946 12.7071 14.7071C12.8946 14.5196 13 14.2652 13 14V8C13 7.73478 12.8946 7.48043 12.7071 7.29289C12.5196 7.10536 12.2652 7 12 7Z" fill="#E5E5E5"/>
+                                                                    </svg>                                        
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                
                                                     </div>
-                            
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    {% endif %}
                                 {% endfor %}
 
                             </div>

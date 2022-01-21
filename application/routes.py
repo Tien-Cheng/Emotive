@@ -265,7 +265,7 @@ def predict():
     if request.method == 'POST':
         upload_time = dt.now().strftime('%Y%m%d%H%M%S%f')
         imgName = f"{current_user.username.strip().replace(' ', '_')}_{upload_time}.png"
-        imgPath = f"./application/static/uploads/{imgName}"
+        imgPath = f"./application/static/images/{imgName}"
 
         # Using file upload
         if 'file' in request.files.keys():
@@ -317,7 +317,7 @@ def predict():
 
             # Cropped black and white face
             cv2.imwrite(
-                f"./application/static/uploads/faces/{current_user.username.strip().replace(' ', '_')}_{upload_time}_{idx}_face.png", 
+                f"./application/static/images/faces/{current_user.username.strip().replace(' ', '_')}_{upload_time}_{idx}_face.png", 
                 roi_gray
             )
         
@@ -454,7 +454,7 @@ def delete_history():
         
         else:
             # Remove image from the folder
-            os.remove(f'./application/static/uploads/{history.file_path}')
+            os.remove(f'./application/static/images/{history.file_path}')
             
             Prediction.query.filter_by(id=history_id).delete()
             db.session.commit()
@@ -559,7 +559,7 @@ def dashboard():
 
         emotion = history[i].prediction[0][0].lower()
         emotion_counter[emotion] += 1
-        data_usage_mb += os.path.getsize(f'{getcwd()}/application/static/uploads/{history[i].file_path}') / 1e6
+        data_usage_mb += os.path.getsize(f'{getcwd()}/application/static/images/{history[i].file_path}') / 1e6
 
         if est_face[emotion] == None:
             est_face[emotion] = history[i]
