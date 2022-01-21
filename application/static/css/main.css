@@ -220,3 +220,17 @@ hr {
         stroke-dashoffset: 0;
     }
 }
+
+/* ===== Others ===== */
+
+.circular-background {
+    width: 2800px;
+    height: 2800px;
+    position: absolute;
+    bottom: 3%;
+    right: 45%;
+    border-radius: 50%;
+    transform: translateX(50%);
+    background-color: #563BFF;
+    z-index: -2;
+}

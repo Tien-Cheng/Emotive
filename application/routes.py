@@ -393,15 +393,7 @@ def history():
     col_sort = request.args.get("col_sort", "predicted_on")
     desc = request.args.get("dir", "desc") == "desc"
     
-    emotion_filter = {
-        'angry'     : 1,
-        'fearful'   : 1,
-        'surprised' : 1,
-        'happy'     : 1,
-        'neutral'   : 1,
-        'sad'       : 1,
-        'disgusted' : 1
-    }
+    emotion_filter = { k:1 for k in emotion_list }
 
     req_dict_keys = request.args.keys()
 
@@ -531,25 +523,8 @@ def dashboard():
     
     total_photos = len(history)
 
-    emotion_counter = {
-        'happy'     : 0,
-        'neutral'   : 0,
-        'surprised' : 0,
-        'sad'       : 0,
-        'fearful'   : 0,
-        'disgusted' : 0,
-        'angry'     : 0
-    }
-
-    est_face = {
-        'happy'     : None,
-        'neutral'   : None,
-        'surprised' : None,
-        'sad'       : None,
-        'fearful'   : None,
-        'disgusted' : None,
-        'angry'     : None
-    }
+    emotion_counter = { k:0 for k in emotion_list }
+    est_face = { k:None for k in emotion_list }
 
     data_usage_mb = 0
 
