@@ -30,7 +30,7 @@
             {% for emotion, prob in history.prediction %}
                 <div class="d-flex align-items-center justify-content-start">
                     <div class="bg-purple-light ps-3 py-2 rounded-pill icon-emotion d-flex align-items-center" style="width: 130px;">
-                        <img class="me-2" src="{{url_for('static', filename='assets/'+emotion+'.svg')}}" alt="emotion-icons">
+                        <img class="me-2" src="{{url_for('static', filename='assets/'+emotion.lower() +'.svg')}}" alt="emotion-icons">
                         <span class="text-purple fw-bold">{{emotion}}</span>
                     </div>
                     <div class="bg-purple-light py-2" style="width: 60px">
