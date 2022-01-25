@@ -1,32 +1,26 @@
-from application import app, db
-from application.models import Prediction, User
-from sqlalchemy.sql.expression import column
-from flask import (
-    json,
-    render_template,
-    request,
-    flash,
-    redirect,
-    url_for,
-    jsonify,
-    make_response,
-)
-from application.forms import LoginForm, RegisterForm
-from flask_login import login_user, logout_user, current_user
-
-import os
-import cv2
-import json
-import plotly
-import urllib
-import requests
 import datetime
-import numpy as np
-from PIL import Image
-from os import getcwd
-import plotly.graph_objects as go
+import json
+import os
+import urllib
 from datetime import datetime as dt
+from os import getcwd
+
+import cv2
+import numpy as np
+import plotly
+import plotly.graph_objects as go
+import requests
+from flask import (flash, abort, json, jsonify, make_response, redirect,
+                   render_template, request, url_for)
+from flask_login import current_user, login_user, logout_user
+from PIL import Image
 from plotly.subplots import make_subplots
+from sqlalchemy.sql.expression import column
+from werkzeug.exceptions import InternalServerError
+
+from application import app, db
+from application.forms import LoginForm, RegisterForm
+from application.models import Prediction, User
 
 # ===== Functions and Global variables ===== >>>
 
@@ -149,6 +143,16 @@ def plot_history(history):
         f.write(plotly_txt + "\n" + content)
 
     return html_file_path
+
+
+# ===== Error Handler ===== >>>
+@app.errorhandler(Exception)
+def error_handler(error):
+    if not hasattr(error, "name") or not hasattr(error, "code"):
+        error = InternalServerError
+        error.name = "Internal Server Error"
+        error.code = 500
+    return render_template("error.html", error=error, page="error", userInfo=current_user), error.code
 
 
 # ===== Routes ===== >>>
@@ -683,12 +687,3 @@ def api_user_delete(id):
 
 
 # ========== Others ==========
-
-# 404 Not found handler
-@app.errorhandler(404)
-def not_found(e):
-    return render_template(
-        "404.html",
-        page="404",
-        userInfo=current_user,
-    )
