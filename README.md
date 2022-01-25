@@ -18,6 +18,7 @@
 * Camera with FaceAPI detection is slow
 * Camera cannot CORS (i.e. localhost to 127.0.0.1)
 * When loading the model, the buttons cannot be pressed
+* Camera does not work on Firefox due to incompatible APIs
 * Deleting a history item will reset the history to default filters
 
 ### Edit in face-api.min.js
