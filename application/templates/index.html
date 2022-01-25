@@ -29,12 +29,17 @@
         <div class="intro-message-wrapper d-flex flex-column justify-content-between">
             <h2 class="fw-bold">The Most Advanced<br>Emotion Recognition</h2>
             <p>We use a state-of-the-art Deep Learning model to monitor your mental health and well-being!</p>
-            {% if userInfo.is_anonymous %}
+            
             <div class="d-flex align-items-center justify-content-between">
+                {% if userInfo.is_anonymous %}
                 <a href="/login"><button class="intro-btn btn text-white">Login</button></a>
                 <a href="/register"><button class="intro-btn btn text-white">Register</button></a>
+                {% else %}
+                <a href="/predict"><button class="intro-btn btn text-white">Try it out!</button></a>
+                {% endif %}
+
             </div>
-            {% endif %}
+            
         </div>
 
         <div class="intro-image">
