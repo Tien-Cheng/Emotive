@@ -263,16 +263,16 @@ def predict():
         return redirect(url_for('login'))
 
     if request.method == 'POST':
-
         upload_time = dt.now().strftime('%Y%m%d%H%M%S%f')
-        imgPath = f"./application/static/uploads/{upload_time}.png"
+        imgName = f"{current_user.username.strip().replace(' ', '_')}_{upload_time}.png"
+        imgPath = f"./application/static/images/{imgName}"
 
         # Using file upload
         if 'file' in request.files.keys():
             
             f = request.files['file']
             ext = f.filename.split('.')[-1]
-
+            
             if f.filename == '':
                 flash("You did not upload any image!", "red")
                 return redirect(url_for('predict'))
@@ -283,7 +283,7 @@ def predict():
                 return redirect(url_for('predict'))
 
             f.save(imgPath)
-
+        
         # Using WebCam
         elif request.data:
 
@@ -296,7 +296,6 @@ def predict():
         else:
             flash("You did not use WebCam or File Upload!", "red")
             return redirect(url_for('predict'))
-        
 
         # === Crop the faces in the image ===>
 
@@ -312,53 +311,51 @@ def predict():
             flash("No face detected!", "red")
             return redirect(url_for('predict'))
 
-        for idx, (x, y, w, h) in enumerate(faces):
+        for idx, (x, y, w, h) in enumerate(faces): # TODO: Figure what to do when we have multiple faces
             cv2.rectangle(image, (x-5, y-5), (x+w+5, y+h+5), (255,59,86), 2)
-            roi_color = gray[y:y + h, x:x + w]
+            roi_gray = gray[y:y + h, x:x + w]
 
             # Cropped black and white face
             cv2.imwrite(
-                f'./application/static/uploads/faces/{upload_time}_{idx}_face.png', 
-                roi_color
+                f"./application/static/images/faces/{current_user.username.strip().replace(' ', '_')}_{upload_time}_{idx}_face.png", 
+                roi_gray
             )
-
+        
         # === Send image to TF model server ===>
 
-        # # Waiting for AI model to output an array of 7 probability scores
-        # data_instance = np.array(Image.open(f"{getcwd()}/application/static/uploads/faces/20220115140238092389_0_face.png").resize((48,48)))
-        # # From shape of (48,48) to (1,48,48,1)
-        # data_instance = np.expand_dims(np.expand_dims(data_instance, axis=2), axis=0)
-
-        # json_response = requests.post(
-        #     'https://doaa-2072-staging.herokuapp.com/v1/models/img_classifier:predict',
-        #     data = json.dumps({
-        #         "signature_name" : "serving_default",
-        #         "instances" : data_instance.tolist() 
-        #     }),
-        #     headers = {
-        #         "content-type": "application/json" 
-        #     }
-        # )
-
-        # predictions = json.loads(json_response.text)["predictions"]
-        # print('\n\n', predictions, '\n\n', np.array(predictions).shape, '\n\n')
+        # Waiting for AI model to output an array of 7 probability scores
+        data_instance = np.asarray(Image.fromarray(roi_gray).resize((48,48)))
+        # From shape of (48,48) to (1,48,48,1)
+        data_instance = np.expand_dims(np.expand_dims(data_instance, axis=2), axis=0)
+        
+        json_response = requests.post(
+            'https://doaa-ca2-emotive.herokuapp.com/v1/models/img_classifier:predict',
+            data = json.dumps({
+                "signature_name" : "serving_default",
+                "instances" : data_instance.tolist() 
+            }),
+            headers = {
+                "content-type": "application/json"
+            }
+        )
+        
+        predictions = json.loads(json_response.text)["predictions"]
+        print('\n\n', predictions, '\n\n', np.array(predictions).shape, '\n\n')
 
         # === Save image metadata to database ===>
 
         prediction_to_db = {
-            'happy'     : np.random.random(), # Temporary: Artificial Data
-            'neutral'   : np.random.random(), # Temporary: Artificial Data
-            'surprised' : np.random.random(), # Temporary: Artificial Data
-            'sad'       : np.random.random(), # Temporary: Artificial Data
-            'fearful'   : np.random.random(), # Temporary: Artificial Data
-            'disgusted' : np.random.random(), # Temporary: Artificial Data
-            'angry'     : np.random.random()  # Temporary: Artificial Data
+            expression : probability for expression, probability in zip([
+                "angry", "disgusted", "fearful", "happy", "neutral", "sad", "surprised"
+            ], predictions[0])
         }
+
+        print(prediction_to_db)
 
         prediction = Prediction(
             fk_user_id   = int(current_user.id),
             emotion      = sort_prediction(prediction_to_db)[0][0].lower(),
-            file_path    = str(f'{upload_time}.png'),
+            file_path    = str(imgName),
             prediction   = prediction_to_db,
             predicted_on = dt.now()
         )
@@ -367,7 +364,7 @@ def predict():
         history = Prediction.query.filter_by(id=pred_id).first()
 
         history.prediction = sort_prediction(history.prediction)
-
+        
         return render_template(
             "result.html",
             page="results",
@@ -396,15 +393,7 @@ def history():
     col_sort = request.args.get("col_sort", "predicted_on")
     desc = request.args.get("dir", "desc") == "desc"
     
-    emotion_filter = {
-        'angry'     : 1,
-        'fearful'   : 1,
-        'surprised' : 1,
-        'happy'     : 1,
-        'neutral'   : 1,
-        'sad'       : 1,
-        'disgusted' : 1
-    }
+    emotion_filter = { k:1 for k in emotion_list }
 
     req_dict_keys = request.args.keys()
 
@@ -457,7 +446,7 @@ def delete_history():
         
         else:
             # Remove image from the folder
-            os.remove(f'./application/static/uploads/{history.file_path}')
+            os.remove(f'./application/static/images/{history.file_path}')
             
             Prediction.query.filter_by(id=history_id).delete()
             db.session.commit()
@@ -534,25 +523,8 @@ def dashboard():
     
     total_photos = len(history)
 
-    emotion_counter = {
-        'happy'     : 0,
-        'neutral'   : 0,
-        'surprised' : 0,
-        'sad'       : 0,
-        'fearful'   : 0,
-        'disgusted' : 0,
-        'angry'     : 0
-    }
-
-    est_face = {
-        'happy'     : None,
-        'neutral'   : None,
-        'surprised' : None,
-        'sad'       : None,
-        'fearful'   : None,
-        'disgusted' : None,
-        'angry'     : None
-    }
+    emotion_counter = { k:0 for k in emotion_list }
+    est_face = { k:None for k in emotion_list }
 
     data_usage_mb = 0
 
@@ -562,7 +534,7 @@ def dashboard():
 
         emotion = history[i].prediction[0][0].lower()
         emotion_counter[emotion] += 1
-        data_usage_mb += os.path.getsize(f'{getcwd()}/application/static/uploads/{history[i].file_path}') / 1e6
+        data_usage_mb += os.path.getsize(f'{getcwd()}/application/static/images/{history[i].file_path}') / 1e6
 
         if est_face[emotion] == None:
             est_face[emotion] = history[i]

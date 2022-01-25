@@ -17,7 +17,7 @@
 <div class="d-flex align-items-center justify-content-center">
 
     <!-- Image -->
-    <div class="image-result rounded me-5" style="background-image: url({{url_for('static', filename='uploads/' + history.file_path)}})"></div>
+    <div class="image-result rounded me-5" style="background-image: url({{url_for('static', filename='images/' + history.file_path)}})"></div>
 
     <!-- Prediction Probabilities -->
     <div class="image-data-wrapper d-flex flex-column align-items-stretch justify-content-between">
@@ -30,7 +30,7 @@
             {% for emotion, prob in history.prediction %}
                 <div class="d-flex align-items-center justify-content-start">
                     <div class="bg-purple-light ps-3 py-2 rounded-pill icon-emotion d-flex align-items-center" style="width: 130px;">
-                        <img class="me-2" src="{{url_for('static', filename='assets/'+emotion+'.svg')}}" alt="emotion-icons">
+                        <img class="me-2" src="{{url_for('static', filename='assets/'+emotion.lower() +'.svg')}}" alt="emotion-icons">
                         <span class="text-purple fw-bold">{{emotion}}</span>
                     </div>
                     <div class="bg-purple-light py-2" style="width: 60px">
@@ -55,33 +55,7 @@
 </div>
 
 <style>
-    .image-result {
-        height: 500px;
-        width: 500px;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-        box-shadow: 0px 3px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    .image-data-wrapper {
-        height: 500px;
-        width: 500px;
-    }
-
-    .probabilities {
-        height: 380px;
-    }
-
-    .icon-emotion {
-        border-top-right-radius: 0px !important;
-        border-bottom-right-radius: 0px !important;
-    }
-
-    .icon-emotion-right {
-        border-top-left-radius: 0px !important;
-        border-bottom-left-radius: 0px !important;
-    }
+    
 </style>
 
 {% endblock %}
