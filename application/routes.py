@@ -151,7 +151,8 @@ def error_handler(error):
     if not hasattr(error, "name") or not hasattr(error, "code"):
         error = InternalServerError
         error.name = "Internal Server Error"
-    return render_template("error.html", error=error, page="error", userInfo=current_user)
+        error.code = 500
+    return render_template("error.html", error=error, page="error", userInfo=current_user), error.code
 
 
 # ===== Routes ===== >>>
