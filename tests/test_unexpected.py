@@ -1,8 +1,6 @@
 """
 Test how app handles unexpected errors via the error handler
 """
-import json
-
 import pytest
 
 
@@ -10,11 +8,11 @@ import pytest
     "endpoint",
     [
         ("invalid_link", 404),
-        ("history", 303),
+        ("history", 302),
         ("", 200),
         ("login", 200),
         ("register", 200),
-        ("predict", 303),
+        ("predict", 302),
     ],
 )
 def test_route_codes(client, endpoint, capsys):
