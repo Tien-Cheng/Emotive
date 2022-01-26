@@ -29,6 +29,8 @@ docker-build:
       fi
     # Build Docker Image
     - docker build -f Dockerfile --iidfile imageid.txt -t registry.heroku.com/doaa-ca2-emotive/web .
+    - docker login -u _ -p $HEROKU_API_KEY registry.heroku.com
+    - docker push registry.heroku.com/doaa-ca2-emotive/web
     # apk is the Alpine Linux package manager
     - apk add --no-cache curl 
     - echo "Docker Image ID is $(cat imageid.txt)"
