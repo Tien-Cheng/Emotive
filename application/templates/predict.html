@@ -230,7 +230,7 @@
     // /48619138/how-to-upload-canvas-and-image-to-the-server-with-javascript
     function upload_to_server(canvasData) {
 
-        return fetch('http://127.0.0.1:5000/predict', {
+        return fetch('https://doaa-ca2-emotive.herokuapp.com/predict', {
             method: 'POST',
             headers: {'Content-Type': 'image/png'},
             body: canvasData
