@@ -360,7 +360,7 @@ def predict():
         data_instance = np.expand_dims(np.expand_dims(data_instance, axis=2), axis=0)
 
         json_response = requests.post(
-            "https://doaa-ca2-emotive.herokuapp.com/v1/models/img_classifier:predict",
+            "https://doaa-ca2-emotive-model.herokuapp.com/v1/models/img_classifier:predict",
             data=json.dumps(
                 {
                     "signature_name": "serving_default",

@@ -15,3 +15,6 @@ venv
 .vscode
 __pycache__
 database.db
+
+plotly.html
+file.html

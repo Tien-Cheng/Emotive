@@ -1,0 +1,44 @@
+stages:
+    - test
+    - build
+test:
+    image: python:3.8-slim
+    stage: test
+    script:
+        - apt-get update -qy
+        - pip install -r requirements.txt
+        - python -m pytest -vs
+docker-build:
+  # Use the official docker image.
+  image: docker:latest
+  stage: build
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  # Default branch leaves tag empty (= latest tag)
+  # All other branches are tagged with the escaped branch name (commit ref slug)
+  script:
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        tag=""
+        echo "Running on default branch '$CI_DEFAULT_BRANCH': tag = 'latest'"
+      else
+        tag=":$CI_COMMIT_REF_SLUG"
+        echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
+      fi
+    # Build Docker Image
+    - docker build -f Dockerfile --iidfile imageid.txt -t registry.heroku.com/doaa-ca2-emotive/web .
+    - docker login -u _ -p $HEROKU_API_KEY registry.heroku.com
+    - docker push registry.heroku.com/doaa-ca2-emotive/web
+    # apk is the Alpine Linux package manager
+    - apk add --no-cache curl 
+    - echo "Docker Image ID is $(cat imageid.txt)"
+    - |-
+        curl -X PATCH https://api.heroku.com/apps/doaa-ca2-emotive/formation --header "Content-Type: application/json" --header "Accept: application/vnd.heroku+json; version=3.docker-releases" --header "Authorization: Bearer ${HEROKU_API_KEY}" --data '{ "updates": [ { "type": "web", "docker_image": "'$(cat imageid.txt)'" } ] }'
+
+  # Run this job in a branch where a Dockerfile exists
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      exists:
+        - Dockerfile
