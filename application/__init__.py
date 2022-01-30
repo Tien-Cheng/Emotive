@@ -1,8 +1,10 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
-from flask_cors import CORS
 import os
+
+from flask import Flask
+from flask_cors import CORS
+from flask_heroku import Heroku
+from flask_login import LoginManager
+from flask_sqlalchemy import SQLAlchemy
 
 # Create the Flask app
 app = Flask(__name__)
@@ -22,7 +24,7 @@ else:
 uri = os.getenv("DATABASE_URL")  # or other relevant config var
 if uri is not None and uri.startswith("postgres://"):
     os.environ["DATABASE_URL"] = uri.replace("postgres://", "postgresql://", 1)
-
+heroku = Heroku(app)
 login_manager = LoginManager(app)
 
 # Instantiate SQLAlchemy to handle db process
