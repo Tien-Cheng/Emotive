@@ -10,6 +10,8 @@ test:
         - python -m pytest -vs
 docker-build:
   # Use the official docker image.
+  only:
+    - main
   image: docker:latest
   stage: build
   services:
@@ -37,8 +39,3 @@ docker-build:
     - |-
         curl -X PATCH https://api.heroku.com/apps/doaa-ca2-emotive/formation --header "Content-Type: application/json" --header "Accept: application/vnd.heroku+json; version=3.docker-releases" --header "Authorization: Bearer ${HEROKU_API_KEY}" --data '{ "updates": [ { "type": "web", "docker_image": "'$(cat imageid.txt)'" } ] }'
 
-  # Run this job in a branch where a Dockerfile exists
-  rules:
-    - if: $CI_COMMIT_BRANCH
-      exists:
-        - Dockerfile
