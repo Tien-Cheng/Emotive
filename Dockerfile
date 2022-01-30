@@ -1,5 +1,6 @@
 FROM python:3.8-slim
 RUN apt-get update -y
+RUN apt-get install -y postgresql-server-dev-all
 RUN mkdir /app
 # Only copy requirements so as to avoid reinstalling them every time if the other code changes
 COPY requirements.txt /app/requirements.txt 
