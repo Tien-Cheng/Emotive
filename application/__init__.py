@@ -24,7 +24,7 @@ else:
 uri = os.getenv("DATABASE_URL")  # or other relevant config var
 if uri is not None and uri.startswith("postgres://"):
     os.environ["DATABASE_URL"] = uri.replace("postgres://", "postgresql://", 1)
-heroku = Heroku(app)
+    heroku = Heroku(app)
 login_manager = LoginManager(app)
 
 # Instantiate SQLAlchemy to handle db process
