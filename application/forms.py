@@ -28,3 +28,9 @@ class RegisterForm(FlaskForm):
     )
 
     submit = SubmitField("Register")
+
+    def validate_username(self, username):
+        if not username.data.isalpha():
+            raise ValidationError('Username must contain only letters')
+        elif ' ' in username.data:
+            raise ValidationError('Username must not contain spaces')

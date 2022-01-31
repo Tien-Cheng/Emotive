@@ -146,6 +146,7 @@ def plot_history(history):
 
 
 # ===== Error Handler ===== >>>
+
 @app.errorhandler(Exception)
 def error_handler(error):
     if not hasattr(error, "name") or not hasattr(error, "code"):
@@ -337,10 +338,16 @@ def predict():
             os.remove(imgPath)  # Remove image from directory
             flash("No face detected!", "red")
             return redirect(url_for("predict"))
+        
+        elif len(faces) > 1:
+
+            os.remove(imgPath)
+            flash("Multiple faces detected!", "red")
+            return redirect(url_for("predict"))
 
         for idx, (x, y, w, h) in enumerate(
             faces
-        ):  # TODO: Figure what to do when we have multiple faces
+        ):
             cv2.rectangle(
                 image, (x - 5, y - 5), (x + w + 5, y + h + 5), (255, 59, 86), 2
             )
@@ -390,8 +397,6 @@ def predict():
                 predictions[0],
             )
         }
-
-        print(prediction_to_db)
 
         prediction = Prediction(
             fk_user_id=int(current_user.id),
@@ -579,6 +584,7 @@ def dashboard():
 
         emotion = history[i].prediction[0][0].lower()
         emotion_counter[emotion] += 1
+        
         try:
             data_usage_mb += (
                 os.path.getsize(
@@ -590,6 +596,7 @@ def dashboard():
             print(
                 f"{getcwd()}/application/static/images/{history[i].file_path} not found"
             )
+        
         if est_face[emotion] == None:
             est_face[emotion] = history[i]
         elif est_face[emotion].prediction[0][1] < history[i].prediction[0][1]:
@@ -619,6 +626,213 @@ def dashboard():
 
 # =========== APIs ===========
 
+# API for prediction
+@app.route("/api/predict", methods=["POST"])
+def api_predict():
+
+    upload_time = dt.now().strftime("%Y%m%d%H%M%S%f")
+    imgName = f"api_{upload_time}.png"
+    imgPath = f"./application/static/images/{imgName}"
+
+    # Using file upload
+    if "file" in request.files.keys():
+
+        f = request.files["file"]
+        ext = f.filename.split(".")[-1]
+
+        if f.filename == "":
+            return jsonify({"error": "No image uploaded"})
+
+        # Handle non-standard images
+        if ext not in ["png"]:
+            return jsonify({"error": "Only PNG images are allowed"})
+
+        f.save(imgPath)
+
+    # Using WebCam
+    elif request.data:
+
+        image_b64 = request.data.decode("utf-8")
+        response = urllib.request.urlopen(image_b64)
+
+        with open(imgPath, "wb") as f:
+            f.write(response.file.read())
+
+    else:
+        return jsonify({"error": "No image uploaded"})
+
+    # === Crop the faces in the image ===>
+
+    image = cv2.imread(imgPath)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    faceCascade = cv2.CascadeClassifier(
+        cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+    )
+    
+    faces = faceCascade.detectMultiScale(
+        gray, scaleFactor=1.3, minNeighbors=3, minSize=(30, 30)
+    )
+
+    if len(faces) < 1:
+
+        os.remove(imgPath)  # Remove image from directory
+        return jsonify({"error": "No face detected"})
+    
+    elif len(faces) > 1:
+
+        os.remove(imgPath)
+        return jsonify({"error": "Multiple faces detected"})
+
+    for idx, (x, y, w, h) in enumerate(
+        faces
+    ):
+        cv2.rectangle(
+            image, (x - 5, y - 5), (x + w + 5, y + h + 5), (255, 59, 86), 2
+        )
+        roi_gray = gray[y : y + h, x : x + w]
+
+        # Cropped black and white face
+        cv2.imwrite(
+            f"./application/static/images/faces/api_{upload_time}_{idx}_face.png",
+            roi_gray,
+        )
+
+    # === Send image to TF model server ===>
+
+    # Waiting for AI model to output an array of 7 probability scores
+    data_instance = np.asarray(Image.fromarray(roi_gray).resize((48, 48)))
+    # From shape of (48,48) to (1,48,48,1)
+    data_instance = np.expand_dims(np.expand_dims(data_instance, axis=2), axis=0)
+
+    json_response = requests.post(
+        "https://doaa-ca2-emotive-model.herokuapp.com/v1/models/img_classifier:predict",
+        data=json.dumps(
+            {
+                "signature_name": "serving_default",
+                "instances": data_instance.tolist(),
+            }
+        ),
+        headers={"content-type": "application/json"},
+    )
+
+    predictions = json.loads(json_response.text)["predictions"]
+
+    # === Save image metadata to database ===>
+
+    prediction_to_db = {
+        expression: probability
+        for expression, probability in zip(
+            [
+                "angry",
+                "disgusted",
+                "fearful",
+                "happy",
+                "neutral",
+                "sad",
+                "surprised",
+            ],
+            predictions[0],
+        )
+    }
+
+    prediction = Prediction(
+        fk_user_id=int(1),
+        emotion=sort_prediction(prediction_to_db)[0][0].lower(),
+        file_path=str(imgName),
+        prediction=prediction_to_db,
+        predicted_on=dt.now(),
+    )
+
+    pred_id = add_to_db(prediction)
+    history = Prediction.query.filter_by(id=pred_id).first()
+
+    history.prediction = sort_prediction(history.prediction)
+
+    return jsonify(history)
+
+# API for adding history
+@app.route("/api/history/add", methods=["GET"])
+def api_add_history():
+    # Retrieve the json file posted from client
+    data = request.get_json()
+
+    # Add the history to the database
+    history = Prediction(
+        fk_user_id=int(1),
+        emotion=data["emotion"],
+        file_path=data["file_path"],
+        prediction=data["prediction"],
+        predicted_on=dt.now(),
+    )
+
+    hist_id = add_to_db(history)
+
+    return jsonify({"id": hist_id})
+
+
+# API for getting all history
+@app.route("/api/history", methods=["GET"])
+def api_get_all_history():
+
+    page = int(request.args.get("page", 1))
+    per_page = int(request.args.get("per_page", 9))
+    col_sort = request.args.get("col_sort", "predicted_on")
+    desc = request.args.get("dir", "desc") == "desc"
+
+    emotion_filter = {k: 1 for k in emotion_list}
+
+    req_dict_keys = request.args.keys()
+
+    # check if req_dict_keys does not contain all elements in emotion_list
+    if not all(f"c{el.capitalize()}" not in req_dict_keys for el in emotion_list):
+        for e in emotion_list:
+            emotion_filter[e] = int(request.args.get(f"c{e.capitalize()}", 0))
+
+    history = get_history(
+        current_user.id,
+        page,
+        per_page,
+        col_sort,
+        desc,
+        [k for k, v in emotion_filter.items() if v == 1],
+    )
+
+    for i, p in enumerate(history.items):
+        history.items[i].prediction = sort_prediction(p.prediction)
+    
+    return jsonify(history)
+
+# API for getting history by id
+@app.route("/api/history/get/<int:history_id>", methods=["GET"])
+def api_get_history(history_id):
+
+    history_id = request.arg
+
+    # Get the history from the database
+    history = Prediction.query.filter_by(id=history_id).first()
+
+    return jsonify(history)
+
+
+# API for deleting history
+@app.route("/api/history/delete/<int:history_id>", methods=["GET"])
+def api_delete_history(history_id):
+    
+    history = Prediction.query.filter_by(id=history_id).first()
+
+    # Check if history exist
+    if history:
+        # Remove image from the folder
+        os.remove(f"./application/static/images/{history.file_path}")
+
+        Prediction.query.filter_by(id=history_id).delete()
+        db.session.commit()
+
+        return jsonify({"success": True})
+
+    else:
+        return jsonify({"error": "History not found"})
 
 # ========= APIs Users =========
 
@@ -630,7 +844,7 @@ def api_user_add():
     data = request.get_json()
 
     # Create a user object store all data for db action
-    pred_id = add_to_db(
+    user_id = add_to_db(
         User(
             username=data["username"],
             password=data["password"],
@@ -639,8 +853,7 @@ def api_user_add():
     )
 
     # Return the result of the db action
-    return jsonify({"id": pred_id})
-
+    return jsonify({"id": user_id})
 
 # API get users
 @app.route("/api/user-get/<id>", methods=["GET"])
@@ -659,7 +872,6 @@ def api_user_get(id):
     # Convert the data to json
     result = jsonify(data)
     return result
-
 
 # API get all users
 @app.route("/api/get-users", methods=["GET"])

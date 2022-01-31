@@ -25,25 +25,25 @@ class Prediction(db.Model):
     # length of string (if any)
 
     @validates('id') 
-    def validate_id(self, key, id):
+    def validate_id(self, _, id):
         if type(id) is not int: raise AssertionError('Prediction Id must be an Integer')
         if id <= 0: raise AssertionError('Prediction Id must be positive')
         return id
     
     @validates('fk_user_id') 
-    def validate_fk_user_id(self, key, fk_user_id):
+    def validate_fk_user_id(self, _, fk_user_id):
         if type(fk_user_id) is not int: raise AssertionError('Foreign Key User Id must be an Integer')
         if fk_user_id <= 0: raise AssertionError('Foreign Key User Id must be positive')
         return fk_user_id
 
     @validates('emotion')
-    def validate_file_path(self, key, emotion):
+    def validate_file_path(self, _, emotion):
         if type(emotion) is not str: raise AssertionError('Emotion must be a String')
         if len(emotion) <= 0: raise AssertionError('Emotion must not be empty')
         return emotion
 
     @validates('file_path')
-    def validate_file_path(self, key, file_path):
+    def validate_file_path(self, _, file_path):
         if type(file_path) is not str: raise AssertionError('File path must be a String')
         if len(file_path) <= 0: raise AssertionError('File path must not be empty')
         return file_path
@@ -84,6 +84,7 @@ class User(db.Model, UserMixin):
     def validate_username(self, key, username):
         if type(username) is not str: raise AssertionError('Username must be a String')
         if len(username) <= 0: raise AssertionError('Username must not be empty')
+        if not username.isalpha(): raise AssertionError('Username must contain only letters')
         return username
     
     @validates('password') 
