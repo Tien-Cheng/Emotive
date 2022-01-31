@@ -7,7 +7,7 @@
 }
 
 .text-purple {
-    color: #563BFF;
+    color: #563BFF !important;
 }
 
 .text-purple:hover {
@@ -92,7 +92,7 @@ hr {
     margin-right: 30px;
 }
 
-.nav > a:hover {
+.nav-link:hover {
     color: #563BFF;
     text-decoration: underline;
 }

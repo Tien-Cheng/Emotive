@@ -1,31 +1,45 @@
-<header class="d-flex align-items-center justify-content-between px-4 py-3">
+<nav class="navbar navbar-expand-md justify-content-between p-3 {{'bg-purple navbar-dark' if page == 'home' else 'bg-white navbar-light'}}">
+    
     <a href="/" style="text-decoration: none;"><h2 class="logo {{'text-white' if page == 'home' else 'text-purple'}} mb-0"">Emotive</h2></a>
 
     {% if not userInfo.is_anonymous %}
-        {% if page != 'home' %}
-            <div class="nav d-flex">
-                <a href="/predict" class="{{'fw-bold text-purple' if page == 'predict' else 'text-dark'}} pt-2">Photo</a>
-                <a href="/dashboard" class="{{'fw-bold text-purple' if page == 'dashboard' else 'text-dark'}} pt-2">Dashboard</a>
-                <a href="/history" class="{{'fw-bold text-purple' if page in ['history','results'] else 'text-dark'}} pt-2">History</a>
-                <a href="/logout" class="text-dark mr-0 pt-2">Logout</a>
-                
-                <div class="rounded-pill bg-purple-light py-2 px-3 fw-bold">
-                    <span>Hi, </span>
-                    <span class="text-purple">{{userInfo.username}}!</span>
-                </div>
+    <div class="d-flex flex-column flex-md-row">
+        <div class="d-flex">
+            <div class="d-block d-md-none rounded-pill me-3 {{'bg-white-light' if page == 'home' else 'bg-purple-light'}} py-2 px-3 fw-bold ms-3">
+                <span>Hi, </span>
+                <span class="{{'text-white' if page == 'home' else 'text-purple'}}">{{userInfo.username}}!</span>
             </div>
-        {% else %}
-            <div class="nav d-flex text-white">
-                <a href="/predict" class="text-white pt-2">Photo</a>
-                <a href="/dashboard" class="text-white pt-2">Dashboard</a>
-                <a href="/history" class="text-white pt-2">History</a>
-                <a href="/logout" class="text-white mr-0 pt-2">Logout</a>
-                
-                <div class="rounded-pill bg-white-light py-2 px-3 fw-bold">
-                    <span>Hi, </span>
-                    <span class="text-white">{{userInfo.username}}!</span>
-                </div>
-            </div>
-        {% endif %}
+        
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+    
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="/predict" class="nav-link pe-2 text-end {{'text-white' if page == 'home' else 'text-purple'}}
+                                                {{'fw-bold text-purple' if page == 'predict' else 'text-dark'}} pt-2">Photo</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/dashboard" class="nav-link pe-2 text-end {{'text-white' if page == 'home' else 'text-purple'}}
+                                                {{'fw-bold text-purple' if page == 'dashboard' else 'text-dark'}} pt-2">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/history" class="nav-link pe-2 text-end {{'text-white' if page == 'home' else 'text-purple'}}
+                                                {{'fw-bold text-purple' if page in ['history','results'] else 'text-dark'}} pt-2">History</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/logout" class="nav-link pe-2 text-end {{'text-white' if page == 'home' else 'text-purple'}}  mr-0 pt-2">Logout</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="d-none d-md-block rounded-pill {{'bg-white-light' if page == 'home' else 'bg-purple-light'}} py-2 px-3 fw-bold ms-3">
+            <span>Hi, </span>
+            <span class="{{'text-white' if page == 'home' else 'text-purple'}}">{{userInfo.username}}!</span>
+        </div>
+    </div>
     {% endif %}
-</header>
+
+</nav>
