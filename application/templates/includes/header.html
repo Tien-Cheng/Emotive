@@ -30,7 +30,9 @@
                                                 {{'fw-bold text-purple' if page in ['history','results'] else 'text-dark'}} pt-2">History</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/logout" class="nav-link pe-2 text-end {{'text-white' if page == 'home' else 'text-purple'}}  mr-0 pt-2">Logout</a>
+                    <form action="/logout" method="post" class="d-flex align-items-center justify-content-end">
+                        <button type="submit" class="nav-link pe-2 text-end {{'text-white' if page == 'home' else 'text-purple'}} pt-2 bg-transparent border-0">Logout</button>
+                    </form>
                 </li>
             </ul>
         </div>

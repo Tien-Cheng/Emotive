@@ -116,6 +116,12 @@ hr {
     z-index: 5;
 }
 
+@media (max-width: 768px) {
+    .error-message {
+        top: 70px;
+    }
+}
+
 /* ===== Buttons ===== */
 
 .btn {

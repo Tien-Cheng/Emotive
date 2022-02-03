@@ -270,7 +270,7 @@ def login():
 
 
 # For users to log out
-@app.route("/logout", methods=["GET"])
+@app.route("/logout", methods=["POST"])
 def logout():
     logout_user()
     flash("You're logged out.", "green")
