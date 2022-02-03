@@ -887,7 +887,7 @@ def get_all_users():
 
 
 # API delete users
-@app.route("/api/user-delete/<id>", methods=["GET"])
+@app.route("/api/user-delete/<id>", methods=["DELETE"])
 def api_user_delete(id):
     User.query.filter_by(id=id).delete()
     return jsonify({"result": "ok"})
