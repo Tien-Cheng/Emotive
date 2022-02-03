@@ -49,7 +49,7 @@
         
                 <!-- Est Face -->
                 <div class="p-2 w-100">
-                    <div class="dash-cont">
+                    <div class="dash-cont est-face-cont">
                         <div id="carouselExampleCaptions" class="carousel carousel-dark slide" data-bs-ride="carousel">
                             <div class="carousel-inner">
                                 {% for emotion, history in est_face.items() %} {% if history %}
@@ -61,15 +61,15 @@
                                     </h5>
                                     <div class="d-flex align-items-center justify-content-center">
                                         <div
-                                            class="item-wrapper rounded overflow-hidden m-3 p-0 bg-white d-flex align-items-center justify-content-between">
+                                            class="dash-item-wrapper rounded overflow-hidden m-3 p-0 bg-white d-flex align-items-center justify-content-between">
                                             <!-- Thumbnail -->
-                                            <div class="thumbnail"
+                                            <div class="dash-thumbnail"
                                                 style="background-image: url({{url_for('static', filename='images/' + history.file_path)}})">
                                             </div>
 
                                             <!-- Information -->
                                             <div
-                                                class="thumbnail-info p-2 ps-3 position-relative d-flex flex-column align-items-start justify-content-between">
+                                                class="dash-thumbnail-info p-2 ps-3 position-relative d-flex flex-column align-items-start justify-content-between">
                                                 <!-- Emotion Icon -->
                                                 <img class="position-absolute top-0 end-0 m-2"
                                                     src="{{url_for('static', filename='assets/' + emotion.lower() + '.svg')}}"
@@ -89,7 +89,7 @@
                                                 <!-- Action Buttons -->
                                                 <div class="d-flex align-items-center justify-content-end w-100">
                                                     <a href="/history/{{history.id}}"
-                                                        class="action-btn action-view d-flex align-items-center justify-content-center me-2">
+                                                        class="dash-action-btn action-view d-flex align-items-center justify-content-center me-2">
                                                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
                                                             xmlns="http://www.w3.org/2000/svg">
                                                             <path
@@ -103,7 +103,7 @@
                                                     <form name="deleteHistory"
                                                         action="/history/delete?id={{history.id}}" method="post">
                                                         <button
-                                                            class="action-btn action-trash d-flex align-items-center justify-content-center">
+                                                            class="dash-action-btn action-trash d-flex align-items-center justify-content-center">
                                                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
                                                                 xmlns="http://www.w3.org/2000/svg">
                                                                 <path fill-rule="evenodd" clip-rule="evenodd"

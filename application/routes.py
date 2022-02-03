@@ -124,9 +124,7 @@ def plot_history(history):
         )
 
     fig.update_layout(paper_bgcolor="white", plot_bgcolor="white", barmode="stack")
-
     fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor="#E5E5E5")
-
     fig.update_layout(margin=dict(l=10, b=10, r=130, t=20))
 
     html_file_path = f"{getcwd()}/application/static/file.html"
@@ -179,7 +177,11 @@ def homepage():
         )
     )
 
-    resp.set_cookie("autoCapture", "ON")
+    if 'autoCapture' in request.cookies:
+        resp.set_cookie('autoCapture', request.cookies.get('autoCapture'))
+    else:
+        resp.set_cookie("autoCapture", "ON")
+        
     return resp
 
 
@@ -246,7 +248,6 @@ def login():
             # Verify if user exist and the passwords are the same
             if user and user.verify_password(password):
                 login_user(user)
-                flash("You're logged in!", "green")
                 return redirect(url_for("predict"))
             else:
                 flash("Login invalid!", "red")
@@ -256,7 +257,6 @@ def login():
     # Authenticated users will be redirected to /predict
     elif request.method == "GET":
         if current_user.is_authenticated:
-            flash("You're already logged in!", "green")
             return redirect(url_for("predict"))
 
     # If user is not authenticated
@@ -586,16 +586,9 @@ def dashboard():
         emotion_counter[emotion] += 1
         
         try:
-            data_usage_mb += (
-                os.path.getsize(
-                    f"{getcwd()}/application/static/images/{history[i].file_path}"
-                )
-                / 1e6
-            )
+            data_usage_mb += (os.path.getsize(f"{getcwd()}/application/static/images/{history[i].file_path}") / 1e6)
         except FileNotFoundError:
-            print(
-                f"{getcwd()}/application/static/images/{history[i].file_path} not found"
-            )
+            print(f"{getcwd()}/application/static/images/{history[i].file_path} not found")
         
         if est_face[emotion] == None:
             est_face[emotion] = history[i]
@@ -608,6 +601,8 @@ def dashboard():
             emotion_counter.items(), key=lambda item: item[1], reverse=True
         )
     ]
+
+    print(est_face)
 
     return render_template(
         "dashboard.html",

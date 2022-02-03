@@ -234,3 +234,23 @@ hr {
     background-color: #563BFF;
     z-index: -2;
 }
+
+@media (max-width: 768px) {
+    .index-body {
+        background-color: #563BFF;
+    }
+    
+    .intro-message-wrapper {
+        margin: 0;
+        margin-top: 50px;
+        padding: 2em;
+    }
+
+    .intro-message-wrapper h2, .intro-message-wrapper p {
+        text-align: center;
+    }
+
+    .intro-message-wrapper .intro-btn {
+        width: 9em;
+    }
+}

@@ -10,6 +10,7 @@
 
 .crop {
     height: 450px;
+    max-width: 100vw;
 }
 
 .face-border {
@@ -51,4 +52,26 @@
     margin-top: 36px;
     background-color: #F6F8FA;
     z-index: 2;
+}
+
+.upload-btn, .toggle-auto-btn, .take-photo-btn {
+    width: fit-content;
+    height: 45px;
+}
+
+@media (max-width: 768px) {
+    .upload-btn, .toggle-auto-btn, .take-photo-btn {
+        width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .crop {
+        width: 95vw;
+    }
+
+    .upload-btn {
+        margin-bottom: 1em;
+    }
+
 }

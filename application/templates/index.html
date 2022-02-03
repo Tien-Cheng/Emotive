@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="{{url_for('static', filename='css/main.css')}}">
 </head>
 
-<body class="min-vh-100 font-main text-black position-relative overflow-hidden" style="background-color: #F6F8FA;">
+<body class="min-vh-100 font-main text-black position-relative overflow-hidden index-body">
 
     {% include "includes/header.html" %}
 
@@ -30,7 +30,7 @@
             <h2 class="fw-bold">The Most Advanced<br>Emotion Recognition</h2>
             <p>We use a state-of-the-art Deep Learning model to monitor your mental health and well-being!</p>
             
-            <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center justify-content-around justify-content-md-between">
                 {% if userInfo.is_anonymous %}
                 <a href="/login"><button class="intro-btn btn text-white">Login</button></a>
                 <a href="/register"><button class="intro-btn btn text-white">Register</button></a>
@@ -42,13 +42,13 @@
             
         </div>
 
-        <div class="intro-image">
+        <div class="intro-image d-none d-md-block">
             <img src="{{url_for('static', filename='assets/intro.svg')}}" alt="Homepage Image">
         </div>
     </div>
 
     <!-- Big Background -->
-    <div class='circular-background'></div>
+    <div class='circular-background d-none d-md-block'></div>
 
 </body>
 

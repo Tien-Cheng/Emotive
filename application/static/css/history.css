@@ -77,3 +77,15 @@
     text-decoration: none;
     background-color: #563BFF;
 }
+
+@media (max-width: 768px) {
+    .history-item-wrapper, .history-btns-wrapper {
+        max-width: 100vw;
+        padding: 0 10px;
+    }
+
+    .history-btns-wrapper > div {
+        display: flex;
+        flex-direction: column;
+    }
+}

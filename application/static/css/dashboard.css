@@ -6,17 +6,18 @@
 .dashboard {
     width: fit-content;
     height: fit-content;
-    max-width: 1300px;
+    max-width: 100vw;
 }
 
 .dash-lhs {
     width: fit-content;
     height: fit-content;
-    max-width: 1070px;
+    max-width: 100vw;
 }
 
 .dash-lhs > div:nth-of-type(1) {
     width: inherit;
+    max-width: 100vw;
     height: 50%;
 }
 
@@ -27,7 +28,7 @@
 
 .dash-lhs > div:nth-of-type(1) > div:nth-of-type(1) {
     width: 50%;
-    height: 300px;
+    height: fit-content;
 }
 
 .dash-lhs > div:nth-of-type(1) > div:nth-of-type(2) {
@@ -61,6 +62,11 @@
     transition: all 300ms;
 }
 
+.est-face-cont {
+    height: 245px;
+    max-width: 100vw;
+}
+
 .dash-cont:hover {
     box-shadow: 0px 0px 0px 2px #553bff;
 }
@@ -87,14 +93,27 @@
 
 .carousel {
     height: 100%;
+    position: relative;
+}
+
+.carousel-inner, .carousel-item {
+    height: 100%;
 }
 
 .carousel-control-next {
-    transform: translateX(30%) translateY(7%);
+    position: absolute;
+    height: fit-content;
+    width: fit-content;
+    right: 0;
+    top: 110%;
 }
 
 .carousel-control-prev {
-    transform: translateX(-30%) translateY(7%);
+    position: absolute;
+    height: fit-content;
+    width: fit-content;
+    left: 0;
+    top: 110%;
 }
 
 @media (min-width: 768px) {
@@ -106,22 +125,25 @@
     .dash-lhs > div:nth-of-type(2) > div:nth-of-type(1) { width: 70%; height: 100%;}
     .dash-lhs > div:nth-of-type(2) > div:nth-of-type(2) { width: 30%;}
     .dash-rhs { max-width: 230px; }
+    .est-face-cont { height: 100%; }
+    .carousel-control-next { top: 0; height: 100%; transform: translateX(30%) translateY(7%); }
+    .carousel-control-prev { top: 0; height: 100%; transform: translateX(-30%) translateY(7%); }
 }
 
 /* === History Items === */
 
-.item-wrapper {
+.dash-item-wrapper {
     height: fit-content;
     width: fit-content;
     box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.1);
     transition: all 300ms;
 }
 
-.item-wrapper:hover {
+.dash-item-wrapper:hover {
     box-shadow: 0px 0px 0px 2px #563BFF;
 }
 
-.thumbnail {
+.dash-thumbnail {
     height: 130px;
     width: 130px;
     background-position: center;
@@ -129,26 +151,26 @@
     background-size: cover;
 }
 
-.thumbnail-info {
+.dash-thumbnail-info {
     height: 130px;
     width: 250px;
 }
 
-.item-wrapper:hover .action-view {
+.dash-item-wrapper:hover .action-view {
     border-color: #563BFF;
     background-color: #563BFF;
 }
 
-.item-wrapper:hover .action-trash {
+.dash-item-wrapper:hover .action-trash {
     border-color: #E71E24;
     background-color: #E71E24;
 }
 
-.item-wrapper:hover path {
+.dash-item-wrapper:hover path {
     fill: white;
 }
 
-.action-btn {
+.dash-action-btn {
     border: 2px solid #ddd;
     border-radius: 5px;
     height: 35px;
@@ -158,6 +180,15 @@
     transition: all 300ms;
 }
 
-.action-btn:hover {
+.dash-action-btn:hover {
     transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+    .dash-item-wrapper {
+        margin: 0 !important;
+    }
+    .carousel {
+        height: fit-content;
+    }
 }

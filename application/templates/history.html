@@ -6,16 +6,16 @@
 
 <div class="mt-4">
     <!-- Past Predictions -->
-    <div class="mb-4">
+    <div class="mb-3 mb-md-4">
         <h4 class="text-center header-main mb-0">Your <span class="text-purple">Past</span> Emotions</h4>
     </div>
     
     {% if history.pages > 0 %}
-        <div class="text-end mx-auto" style="width: 1300px">
-            <div class="btn-group me-5" role="group">
+        <div class="history-btns-wrapper text-end mx-auto" style="width: 1300px">
+            <div class="btn-group me-0 me-md-5" role="group">
 
                 <!-- Emotion Filter-->
-                <div class="dropdown text-end me-2">
+                <div class="dropdown text-end me-0 me-md-2">
                     <form action="/history" method="get" enctype="application/x-www-form-urlencoded">
                         <button class="btn bg-purple text-white dropdown-toggle" type="button" id="history-entries-toggle"
                             data-bs-toggle="dropdown" aria-expanded="false">
@@ -46,7 +46,7 @@
                 </div>
 
                 <!-- Entries per Page -->
-                <div class="dropdown text-end me-2">
+                <div class="dropdown text-end me-0 me-md-2 my-2 my-md-0">
                     <button class="btn bg-purple text-white dropdown-toggle" type="button" id="history-entries-toggle"
                         data-bs-toggle="dropdown" aria-expanded="false">
                         <span class="fw-bold">{{per_page}}</span> entries per page
@@ -96,7 +96,7 @@
         <div class="history-item-wrapper mx-auto my-2 row align-items-center justify-content-center">
             {% for entry in history.items %}
 
-                <div class="col-4 item-wrapper rounded overflow-hidden m-3 p-0 bg-white d-flex align-items-center justify-content-between">
+                <div class="col-4 item-wrapper rounded overflow-hidden my-2 m-md-3 p-0 bg-white d-flex align-items-center justify-content-between">
                     
                     <!-- Thumbnail -->
                     <div class="thumbnail" style="background-image: url({{url_for('static', filename='images/' + entry.file_path)}})"></div>
