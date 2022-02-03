@@ -5,11 +5,14 @@ from flask_cors import CORS
 from flask_heroku import Heroku
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
+from flask_talisman import Talisman
 
 # Create the Flask app
 app = Flask(__name__)
 CORS(app)  # Enable CORS
-
+Talisman(
+    app, content_security_policy_report_only=True, content_security_policy_report_uri=""
+)
 if "TESTING" in os.environ:
     app.config.from_envvar("TESTING")
     print("Using config for TESTING")
@@ -18,6 +21,7 @@ elif "DEVELOPMENT" in os.environ:
     print("Using config for DEVELOPMENT")
 else:
     app.config.from_pyfile("config_deploy.cfg")
+
     print("Using Deployment configuration")
 
 # Fix to get Heroku PostgreSQL to work
