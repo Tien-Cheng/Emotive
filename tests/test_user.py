@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash
 
 @pytest.mark.parametrize(
     "userlist",
-    [["user@yahoo.com", "Password1234!@#$"], ["test_user@ichat.com", "fadd$$@!45FF"]],
+    [["tan", "Password1234!@#$"], ["lee", "fadd$$@!45FF"]],
 )
 def test_UserClass(userlist, capsys):
     with capsys.disabled():
@@ -30,9 +30,18 @@ def test_UserClass(userlist, capsys):
         [],
         [None, None],
         [None],
-        ["email@email.com", None],
+        ["tay", None],
         [None, "Password1234!@#$"],
     ],
 )
 def test_UserClassValidation_missing(userlist, capsys):
+    test_UserClass(userlist, capsys)
+
+
+@pytest.mark.xfail(reason="Invalid inputs", strict=True)
+@pytest.mark.parametrize(
+    "userlist",
+    [["yeet111", "password"], ["", "empty username"], ["empty password", ""], ["", ""]],
+)
+def test_UserClassValidation_invalid(userlist, capsys):
     test_UserClass(userlist, capsys)

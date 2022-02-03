@@ -21,11 +21,11 @@ def client(app):
 def populate_users():
     users = [
         {
-            "username": "user_1@example.com",
+            "username": "jane",
             "password": "Password1234!",
         },
         {
-            "username": "user_2@example.com",
+            "username": "mark",
             "password": "Password567890!",
         },
     ]

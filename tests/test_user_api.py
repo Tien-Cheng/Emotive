@@ -7,8 +7,8 @@ from flask import json
 @pytest.mark.parametrize(
     "userlist",
     [
-        ["user1", "password1"],
-        ["user2", "password2"],
+        ["john", "password1"],
+        ["terry", "password2"],
     ],
 )
 def test_user_add_api(client, userlist, capsys):
