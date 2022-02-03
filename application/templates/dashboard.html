@@ -140,7 +140,7 @@
                     <div class="quotes dash-cont position-relative">
                         <h5 class="fw-bold m-0">Personal Quotes For You</h5>
                         <div class="d-flex flex-column align-items-stretch">
-                            <div style="height: 100%" class="d-flex align-items-center justify-content-center p-3 p-md-0">
+                            <div class="d-flex h-100 align-items-center justify-content-center p-3 p-md-0">
                                 <h5 class="text-center m-0">{{quote.quote}}</h5>
                             </div>
                             <div>
@@ -166,7 +166,7 @@
                         </div>
                         {% endif %}
                         <div class="position-absolute top-0 start-0 ps-3 pt-3">
-                            <h5 class="fw-bold mb-0" style="text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;">
+                            <h5 class="activity-title fw-bold mb-0">
                                 Your Activity
                             </h5>
                         </div>
@@ -177,7 +177,7 @@
                 <div class="p-2">
                     <div class="dash-cont">
                         <h5 class="fw-bold mb-3">Your Data</h5>
-                        <a href="/history" style="text-decoration: none">
+                        <a href="/history" class="text-decoration-none">
                             <div
                                 class="icon-text-item py-2 mb-3 rounded d-flex align-items-center justify-content-start">
                                 <img class="mx-2" src="{{url_for('static', filename='assets/gallery.svg')}}"
@@ -207,7 +207,7 @@
                 <div class="d-flex flex-column align-items-center justify-content-between">
                     {% for (emotion, count) in emotion_counter %}
                     <div class="icon-text-item py-2 rounded mb-2">
-                        <a href="/history?c{{emotion.capitalize()}}=1" style="text-decoration: none">
+                        <a href="/history?c{{emotion.capitalize()}}=1" class="text-decoration-none">
                             <div class="d-flex align-items-center justify-content-start">
                                 <img class="mx-2"
                                     src="{{url_for('static', filename='assets/' + emotion.lower() + '.svg')}}"

@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-md justify-content-between p-3 {{'bg-purple navbar-dark' if page == 'home' else 'bg-white navbar-light'}}">
     
-    <a href="/" style="text-decoration: none;"><h2 class="logo {{'text-white' if page == 'home' else 'text-purple'}} mb-0"">Emotive</h2></a>
+    <a href="/" class="text-decoration-none"><h2 class="logo {{'text-white' if page == 'home' else 'text-purple'}} mb-0"">Emotive</h2></a>
 
     {% if not userInfo.is_anonymous %}
     <div class="d-flex flex-column flex-md-row">

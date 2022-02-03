@@ -2,6 +2,10 @@
     width: 1300px;
 }
 
+.history-btns-wrapper {
+    width: 1300px;
+}
+
 .item-wrapper {
     height: fit-content;
     width: fit-content;
@@ -70,6 +74,16 @@
 .form-check-input:checked {
     background-color: #563BFF;
     border-color: #563BFF;
+    width: 20px;
+    height: 20px;
+}
+
+.history-filter-btn {
+    width: 140px;
+}
+
+.no-pred-btn-cont {
+    width: 200px;
 }
 
 .dropdown-item.active, .dropdown-item:active {

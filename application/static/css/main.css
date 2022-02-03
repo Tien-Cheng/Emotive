@@ -81,6 +81,10 @@
     font-weight: 400;
 }
 
+.width-fit-content {
+    width: fit-content;
+}
+
 /* ===== Headers & Navigation ===== */
 
 hr {
@@ -233,6 +237,14 @@ hr {
     transform: translateX(50%);
     background-color: #563BFF;
     z-index: -2;
+}
+
+.error-btn {
+    width: 200px;
+}
+
+.login-cont, .register-cont { 
+    max-width: 400px;
 }
 
 @media (max-width: 768px) {

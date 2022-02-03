@@ -18,12 +18,12 @@
 
         <!-- Camera Inputs -->
         <div id="videoWrap" class="video-wrap position-relative crop overflow-hidden rounded-3 d-flex flex-column align-items-center justify-content-center">
-            <span class="position-absolute top-0 start-0 mt-2 ms-2" style="width:35px; z-index:1;">
+            <span class="position-absolute top-0 start-0 mt-2 ms-2">
                 <svg class="w-6 h-6" fill="rgba(86, 59, 255)" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path></svg>
             </span>
 
             <!-- Camera/Model Info -->
-            <div id="camInfoWrap" class="position-absolute top-0 end-0 mt-2 me-2 bg-purple py-1 px-3 rounded-pill" style="z-index:1">
+            <div id="camInfoWrap" class="position-absolute top-0 end-0 mt-2 me-2 bg-purple py-1 px-3 rounded-pill">
                 <span id="camInfo" class="text-white">
                     Starting Camera...
                 </span>
@@ -41,20 +41,20 @@
 </div>
 
 <!-- Action Buttons -->
-<div class="d-flex flex-column-reverse flex-md-row justify-content-center" style="z-index:1;">
+<div class="predict-action-btns d-flex flex-column-reverse flex-md-row justify-content-center">
             
     <!-- Upload Photo -->
     <button class="upload-btn btn bg-purple text-white d-flex align-items-center mt-0 mt-md-4" data-bs-toggle="modal" data-bs-target="#exampleModal">
-        <span style="width: 30px">
+        <span>
             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
         </span>
         <span class="ms-2 me-1">Upload Photo</span>
     </button>
 
     <!-- Toggle AutoCapture -->
-    <a href="/set-cookie?autoCapture={{'ON' if autoCapture == 'OFF' else 'OFF'}}&page=predict" class="my-2 mt-md-4 mx-md-4" style="text-decoration: none;">
+    <a href="/set-cookie?autoCapture={{'ON' if autoCapture == 'OFF' else 'OFF'}}&page=predict" class="my-2 mt-md-4 mx-md-4 text-decoration-none">
         <button class="toggle-auto-btn btn bg-{{'grey' if autoCapture == 'OFF' else 'green'}} text-white d-flex align-items-center">
-            <span style="width: 30px">
+            <span>
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clip-rule="evenodd"></path></svg>
             </span>
             <span class="ms-2 me-1">Auto Capture: <span class="fw-bold">{{autoCapture}}</span></span>
@@ -63,7 +63,7 @@
 
     <!-- Take Photo -->
     <button id="startbutton" class="take-photo-btn btn bg-purple text-white d-flex align-items-center mt-3 mt-md-4">
-        <span style="width: 30px">
+        <span>
             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path></svg>
         </span>
         <span class="ms-2 me-1">Take Photo</span>
@@ -101,8 +101,7 @@
             <polyline id="front" points="1 6 4 6 6 11 10 1 12 6 15 6"></polyline>
         </svg>
     </div>
-    <span class="fw-bold text-dark position-absolute top-50 start-50 translate-middle"
-          style="margin-top: 40px;">Loading...</span>
+    <span class="loading-text fw-bold text-dark position-absolute top-50 start-50 translate-middle">Loading...</span>
 </div>
 
 <script src="{{ url_for('static', filename='js/face-api.min.js') }}"></script>

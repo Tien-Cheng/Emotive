@@ -12,6 +12,18 @@
     width: 500px;
 }
 
+.image-data-wrapper > h5 {
+    color: grey;
+}
+
+.result-confidence {
+    color: #ffffff00;
+}
+
+.emotion-wrapper {
+    width: 130px;
+}
+
 .probabilities {
     height: 380px;
 }

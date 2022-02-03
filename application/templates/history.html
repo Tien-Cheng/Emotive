@@ -11,7 +11,7 @@
     </div>
     
     {% if history.pages > 0 %}
-        <div class="history-btns-wrapper text-end mx-auto" style="width: 1300px">
+        <div class="history-btns-wrapper text-end mx-auto">
             <div class="btn-group me-0 me-md-5" role="group">
 
                 <!-- Emotion Filter-->
@@ -32,14 +32,13 @@
                                     <input class="form-check-input me-2"
                                            type="checkbox" id="Checkbox"
                                            name="c{{e.capitalize()}}" value="1"
-                                           style="width: 20px; height: 20px;"
                                            {% if v == 1 %} checked {% endif %} >
                                     <label class="form-check-label" for="Checkbox">{{e.capitalize()}}</label>
                                 </div>
                             </li>
                             {% endfor %}
                             <li class="text-end">
-                                <button class="btn btn-dark mx-2 mt-2" style="width: 140px;">Filter</button>
+                                <button class="history-filter-btn btn btn-dark mx-2 mt-2">Filter</button>
                             </li>
                         </ul>
                     </form>
@@ -164,7 +163,7 @@
 
     {% if not history %}
         <h5 class="text-center mt-5">Your have no predictions yet!</h5>
-        <div class="mx-auto mt-4" style="width: 200px;">
+        <div class="mx-auto mt-4 no-pred-btn-cont">
             <a href="/predict">
                 <button class="btn bg-purple text-white w-100">Start Predicting!</button>
             </a>

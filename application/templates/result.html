@@ -21,7 +21,7 @@
 
     <!-- Prediction Probabilities -->
     <div class="image-data-wrapper px-2 px-md-0 d-flex flex-column align-items-stretch justify-content-between">
-        <h5 class="fw-bold my-3 my-md-0"  style="color: grey;">
+        <h5 class="fw-bold my-3 my-md-0" >
             <span class="text-dark"">Photo Taken:</span> {{history.predicted_on.strftime('%I:%M %p %A, %d %B %Y')}}
         </h5>
 
@@ -29,19 +29,19 @@
         <div class="probabilities d-flex flex-column align-items-stretch justify-content-between">
             {% for emotion, prob in history.prediction %}
                 <div class="d-flex align-items-center justify-content-start">
-                    <div class="bg-purple-light ps-3 py-2 rounded-pill icon-emotion d-flex align-items-center" style="width: 130px;">
+                    <div class="emotion-wrapper bg-purple-light ps-3 py-2 rounded-pill icon-emotion d-flex align-items-center">
                         <img class="me-2" src="{{url_for('static', filename='assets/'+emotion.lower() +'.svg')}}" alt="emotion-icons">
                         <span class="text-purple fw-bold">{{emotion}}</span>
                     </div>
-                    <div class="bg-purple-light py-2" style="width: fit-content">
+                    <div class="bg-purple-light py-2 width-fit-content">
                         <span class="text-purple fw-bold">|</span>
                         <span class="text-purple fw-bold">{{(prob*100) | round(precision=1)}}%</span>
                     </div>
-                    <div class="d-md-none bg-purple-light pe-3 py-2 rounded-pill icon-emotion-right" style="width: calc({{prob}} * 150px + 20px)">
-                        <span style="color: #ffffff00">|</span>
+                    <div class="result-confidence d-md-none bg-purple-light pe-3 py-2 rounded-pill icon-emotion-right" style="width: calc({{prob}} * 150px + 20px)">
+                        <span>|</span>
                     </div>
-                    <div class="d-none d-md-block bg-purple-light pe-3 py-2 rounded-pill icon-emotion-right" style="width: calc({{prob}} * 300px + 20px)">
-                        <span style="color: #ffffff00">|</span>
+                    <div class="result-confidence d-none d-md-block bg-purple-light pe-3 py-2 rounded-pill icon-emotion-right" style="width: calc({{prob}} * 300px + 20px)">
+                        <span>|</span>
                     </div>
                 </div>
             {% endfor %}
