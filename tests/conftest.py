@@ -1,4 +1,5 @@
 from datetime import datetime as dt
+from application.models import User
 
 import pytest
 from app import app as flask_app
@@ -32,11 +33,12 @@ def populate_users():
         try:
             db.session.add(
                 User(
-                    username=user["email"],
-                    password_hash=user["password"],
-                    created=dt.utcnow(),
+                    username=user["username"],
+                    password=user["password"],
+                    created_on=dt.utcnow(),
                 )
             )
             db.session.commit()
-        except:
+        except Exception as error:
+            print(error)
             db.session.rollback()
