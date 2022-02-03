@@ -288,7 +288,7 @@ def predict():
 
     if request.method == "POST":
         upload_time = dt.now().strftime("%Y%m%d%H%M%S%f")
-        imgName = f"{current_user.username.strip().replace(' ', '_')}_{upload_time}.png"
+        imgName = f"{current_user.username.strip().replace(' ', '_')}_{upload_time}"
         imgPath = f"./application/static/images/{imgName}"
 
         # Using file upload
@@ -302,19 +302,22 @@ def predict():
                 return redirect(url_for("predict"))
 
             # Handle non-standard images
-            if ext not in ["png"]:
-                flash("Upload only png!", "red")
+            if ext not in ["png", "jpg"]:
+                flash("Upload only png or jpg!", "red")
                 return redirect(url_for("predict"))
 
-            f.save(imgPath)
+            imgNameExt = f"{imgName}.{ext}"
+            imgPathExt = f"{imgPath}.{ext}"
+            f.save(imgPathExt)
 
         # Using WebCam
         elif request.data:
 
             image_b64 = request.data.decode("utf-8")
             response = urllib.request.urlopen(image_b64)
-
-            with open(imgPath, "wb") as f:
+            imgNameExt = f"{imgName}.png"
+            imgPathExt = f"{imgPath}.png"
+            with open(imgPathExt, "wb") as f:
                 f.write(response.file.read())
 
         else:
@@ -323,41 +326,34 @@ def predict():
 
         # === Crop the faces in the image ===>
 
-        image = cv2.imread(imgPath)
+        image = cv2.imread(imgPathExt)
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         faceCascade = cv2.CascadeClassifier(
             cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
         )
+        
         faces = faceCascade.detectMultiScale(
             gray, scaleFactor=1.3, minNeighbors=3, minSize=(30, 30)
         )
 
         if len(faces) < 1:
 
-            os.remove(imgPath)  # Remove image from directory
+            # Remove image from directory
+            os.remove(imgPathExt)
             flash("No face detected!", "red")
             return redirect(url_for("predict"))
         
         elif len(faces) > 1:
 
-            os.remove(imgPath)
+            os.remove(imgPathExt)
             flash("Multiple faces detected!", "red")
             return redirect(url_for("predict"))
 
-        for idx, (x, y, w, h) in enumerate(
-            faces
-        ):
-            cv2.rectangle(
-                image, (x - 5, y - 5), (x + w + 5, y + h + 5), (255, 59, 86), 2
-            )
-            roi_gray = gray[y : y + h, x : x + w]
-
-            # Cropped black and white face
-            cv2.imwrite(
-                f"./application/static/images/faces/{current_user.username.strip().replace(' ', '_')}_{upload_time}_{idx}_face.png",
-                roi_gray,
-            )
+        for (x, y, w, h) in faces:
+            
+            cv2.rectangle(image, (x-5,y-5), (x+w+5,y+h+5), (255,59,86), 2)
+            roi_gray = gray[y:y+h, x:x+w]
 
         # === Send image to TF model server ===>
 
@@ -368,13 +364,13 @@ def predict():
 
         json_response = requests.post(
             "https://doaa-ca2-emotive-model.herokuapp.com/v1/models/img_classifier:predict",
-            data=json.dumps(
+            data = json.dumps(
                 {
                     "signature_name": "serving_default",
                     "instances": data_instance.tolist(),
                 }
             ),
-            headers={"content-type": "application/json"},
+            headers = {"content-type": "application/json"}
         )
 
         predictions = json.loads(json_response.text)["predictions"]
@@ -401,7 +397,7 @@ def predict():
         prediction = Prediction(
             fk_user_id=int(current_user.id),
             emotion=sort_prediction(prediction_to_db)[0][0].lower(),
-            file_path=str(imgName),
+            file_path=str(imgNameExt),
             prediction=prediction_to_db,
             predicted_on=dt.now(),
         )
