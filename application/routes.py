@@ -1,8 +1,10 @@
 import datetime
 import json
 import os
+import shutil
 import urllib
 from datetime import datetime as dt
+from datetime import timedelta
 from os import getcwd
 
 import cv2
@@ -155,6 +157,61 @@ def error_handler(error):
 
 
 # ===== Routes ===== >>>
+
+# Populate the database with images for demonstration purposes
+@app.route("/demo", methods=["GET"])
+def demo():
+
+    # Unauthenticated user will be redirected to login
+    if not current_user.is_authenticated:
+        flash("Unauthorized: You're not logged in!", "red")
+        return redirect(url_for("login"))
+    
+    # Get a random date since a month ago
+    def random_date():
+        delta = timedelta(days=30)
+        start = dt.now() - delta
+        int_delta = (delta.days * 24 * 60 * 60) + delta.seconds
+        random_second = np.random.randint(int_delta)
+        return start + timedelta(seconds=random_second)
+
+    for idx in np.random.randint(7, size=100):
+        
+        emotion = emotion_list[idx]
+        upload_time = dt.now().strftime("%Y%m%d%H%M%S%f")
+        
+        img_path = f"./application/static/demo/{emotion}.jpg"
+        img_name = f"demo_{current_user.username.strip().replace(' ', '_')}_{upload_time}.jpg"
+        dest_path = f"./application/static/images/{img_name}"
+
+        prediction_to_db = dict()
+
+        for e in emotion_list:
+            if e == emotion:
+                prediction_to_db[e] = np.random.uniform(0.7,0.95)
+            else:
+                prediction_to_db[e] = np.random.uniform(0.0, 0.4)
+
+        try:
+            shutil.copy(img_path, dest_path)
+            
+            prediction = Prediction(
+                fk_user_id=int(current_user.id),
+                emotion=emotion,
+                file_path=str(img_name),
+                prediction=prediction_to_db,
+                predicted_on=random_date(),
+            )
+
+            add_to_db(prediction)
+
+        except Exception as e:
+            print(e)
+            flash("Error while copying files!", "red")
+            return redirect(url_for("dashboard"))
+    
+    flash("Demo images added successfully!", "green")
+    return redirect(url_for("dashboard"))
 
 
 @app.route("/set-cookie", methods=["GET"])
