@@ -44,3 +44,20 @@ def test_user_add_api(client, userlist, capsys):
 def test_user_get_api(client, userlist, capsys):
     with capsys.disabled():
         raise NotImplementedError
+
+
+
+@pytest.mark.usefixtures("populate_users")
+def test_user_get_all_api(client, userlist, capsys):
+    with capsys.disabled():
+        raise NotImplementedError
+
+
+@pytest.mark.usefixtures("populate_users")
+@pytest.mark.parametrize(
+    "id_list",
+    [3, 4],
+)
+def test_user_delete_api(client, userlist, capsys):
+    with capsys.disabled():
+        raise NotImplementedError
