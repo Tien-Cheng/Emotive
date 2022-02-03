@@ -92,7 +92,7 @@ def test_user_get_all_api(client, capsys):
 def test_user_delete_api(client, userlist, capsys):
     with capsys.disabled():
         # Send post request to API
-        response = client.get(
+        response = client.delete(
             f"/api/user-delete/{userlist}", content_type="application/json"
         )
         response_body = json.loads(response.get_data(as_text=True))
