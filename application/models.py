@@ -4,18 +4,20 @@ from datetime import datetime as dt
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
+
 @login_manager.user_loader
 def get_user(id):
     return User.query.get(id)
 
-class Prediction(db.Model):
-    __tablename__ = 'prediction'
 
-    id           = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    fk_user_id   = db.Column(db.Integer, db.ForeignKey('users.id'))
-    emotion      = db.Column(db.String)
-    file_path    = db.Column(db.String, nullable=False)
-    prediction   = db.Column(db.PickleType, nullable=False)
+class Prediction(db.Model):
+    __tablename__ = "prediction"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    fk_user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    emotion = db.Column(db.String)
+    file_path = db.Column(db.String, nullable=False)
+    prediction = db.Column(db.PickleType, nullable=False)
     predicted_on = db.Column(db.DateTime, nullable=False)
 
     # === Validation ===>
@@ -24,44 +26,54 @@ class Prediction(db.Model):
     # range (if any)
     # length of string (if any)
 
-    @validates('id') 
+    @validates("id")
     def validate_id(self, _, id):
-        if type(id) is not int: raise AssertionError('Prediction Id must be an Integer')
-        if id <= 0: raise AssertionError('Prediction Id must be positive')
+        if type(id) is not int:
+            raise AssertionError("Prediction Id must be an Integer")
+        if id <= 0:
+            raise AssertionError("Prediction Id must be positive")
         return id
-    
-    @validates('fk_user_id') 
+
+    @validates("fk_user_id")
     def validate_fk_user_id(self, _, fk_user_id):
-        if type(fk_user_id) is not int: raise AssertionError('Foreign Key User Id must be an Integer')
-        if fk_user_id <= 0: raise AssertionError('Foreign Key User Id must be positive')
+        if type(fk_user_id) is not int:
+            raise AssertionError("Foreign Key User Id must be an Integer")
+        if fk_user_id <= 0:
+            raise AssertionError("Foreign Key User Id must be positive")
         return fk_user_id
 
-    @validates('emotion')
+    @validates("emotion")
     def validate_file_path(self, _, emotion):
-        if type(emotion) is not str: raise AssertionError('Emotion must be a String')
-        if len(emotion) <= 0: raise AssertionError('Emotion must not be empty')
+        if type(emotion) is not str:
+            raise AssertionError("Emotion must be a String")
+        if len(emotion) <= 0:
+            raise AssertionError("Emotion must not be empty")
         return emotion
 
-    @validates('file_path')
+    @validates("file_path")
     def validate_file_path(self, _, file_path):
-        if type(file_path) is not str: raise AssertionError('File path must be a String')
-        if len(file_path) <= 0: raise AssertionError('File path must not be empty')
+        if type(file_path) is not str:
+            raise AssertionError("File path must be a String")
+        if len(file_path) <= 0:
+            raise AssertionError("File path must not be empty")
         return file_path
 
     # Validate PickleType here
     # ...
 
-    @validates('predicted_on') 
+    @validates("predicted_on")
     def validate_predicted_on(self, key, predicted_on):
-        if type(predicted_on) is not dt: raise AssertionError('Date of Prediction must be a datetime')
+        if type(predicted_on) is not dt:
+            raise AssertionError("Date of Prediction must be a datetime")
         return predicted_on
 
+
 class User(db.Model, UserMixin):
-    __tablename__ = 'users'
-    
-    id         = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    username   = db.Column(db.String, nullable=False, unique=True)
-    password   = db.Column(db.String, nullable=False)
+    __tablename__ = "users"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    username = db.Column(db.String, nullable=False, unique=True)
+    password = db.Column(db.String, nullable=False)
     created_on = db.Column(db.DateTime, nullable=False)
 
     def __init__(self, username, password, created_on):
@@ -71,29 +83,39 @@ class User(db.Model, UserMixin):
 
     def verify_password(self, pwd):
         return check_password_hash(self.password, pwd)
-    
+
     # === Validation ===
 
-    @validates('id') 
+    @validates("id")
     def validate_id(self, key, id):
-        if type(id) is not int: raise AssertionError('User Id must be an Integer')
-        if id <= 0: raise AssertionError('User Id must be positive')
+        if type(id) is not int:
+            raise AssertionError("User Id must be an Integer")
+        if id <= 0:
+            raise AssertionError("User Id must be positive")
         return id
-    
-    @validates('username')
+
+    @validates("username")
     def validate_username(self, key, username):
-        if type(username) is not str: raise AssertionError('Username must be a String')
-        if len(username) <= 0: raise AssertionError('Username must not be empty')
-        if not username.isalpha(): raise AssertionError('Username must contain only letters')
+        if type(username) is not str:
+            raise AssertionError("Username must be a String")
+        if len(username) <= 0:
+            raise AssertionError("Username must not be empty")
+        if not username.isalpha():
+            raise AssertionError("Username must contain only letters")
         return username
-    
-    @validates('password') 
+
+    @validates("password")
     def validate_password(self, key, password):
-        if type(password) is not str: raise AssertionError('Password must be a String')
-        if len(password) <= 0: raise AssertionError('Password must not be empty')
+        if type(password) is not str:
+            raise AssertionError("Password must be a String")
+        if len(password) <= 0:
+            raise AssertionError("Password must not be empty")
         return password
-    
-    @validates('created_on') 
+
+    @validates("created_on")
     def validate_created_on(self, key, created_on):
-        if type(created_on) is not dt: raise AssertionError('Date of User creation must be a datetime')
+        if type(created_on) is not dt:
+            raise AssertionError(
+                "Date of User creation must be a datetime"
+            )  # TODO: Consider checking for "impossible" dates
         return created_on

@@ -10,7 +10,7 @@ from werkzeug.security import generate_password_hash
     [["tan", "Password1234!@#$"], ["lee", "fadd$$@!45FF"]],
 )
 def test_UserClass(userlist, capsys):
-    with capsys.disabled():
+    with capsys.disabled():  # TODO: Consider also testing created date
         created = dt.utcnow()
         new_user = User(
             username=userlist[0],
