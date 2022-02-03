@@ -48,8 +48,7 @@ def test_user_get_api(client, userlist, capsys):
         response = client.get(
             f"/api/user-get/{userlist}", content_type="application/json"
         )
-        print(response.get_data(as_text=True))
-        print(response.status_code)
+
         response_body = json.loads(response.get_data(as_text=True))
 
         # Check response status code
@@ -70,7 +69,7 @@ def test_user_get_all_api(client, capsys):
         # Send post request to API
         response = client.get("/api/get-users", content_type="application/json")
         response_body = json.loads(response.get_data(as_text=True))
-        print(response_body)
+
         # Check response status code
         assert response.status_code == 200
 
