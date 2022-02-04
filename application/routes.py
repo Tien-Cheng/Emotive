@@ -147,13 +147,16 @@ def plot_history(history):
 
 # ===== Error Handler ===== >>>
 
-@app.errorhandler(Exception)
-def error_handler(error):
-    if not hasattr(error, "name") or not hasattr(error, "code"):
-        error = InternalServerError
-        error.name = "Internal Server Error"
-        error.code = 500
-    return render_template("error.html", error=error, page="error", userInfo=current_user), error.code
+# @app.errorhandler(Exception)
+# def error_handler(error):
+    
+#     print(error)
+    
+#     if not hasattr(error, "name") or not hasattr(error, "code"):
+#         error = InternalServerError
+#         error.name = "Internal Server Error"
+#         error.code = 500
+#     return render_template("error.html", error=error, page="error", userInfo=current_user), error.code
 
 
 # ===== Routes ===== >>>
@@ -275,7 +278,7 @@ def register():
 
                 add_to_db(user_db)
 
-                flash("You're registered! Try to login!", "green")
+                flash("Registered! Try to login!", "green")
             else:
                 flash("Account already exist. Try to login!", "dark")
             return redirect(url_for("login"))
@@ -431,7 +434,6 @@ def predict():
         )
 
         predictions = json.loads(json_response.text)["predictions"]
-        print("\n\n", predictions, "\n\n", np.array(predictions).shape, "\n\n")
 
         # === Save image metadata to database ===>
 
@@ -654,8 +656,6 @@ def dashboard():
             emotion_counter.items(), key=lambda item: item[1], reverse=True
         )
     ]
-
-    print(est_face)
 
     return render_template(
         "dashboard.html",

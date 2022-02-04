@@ -4,11 +4,11 @@ from datetime import datetime as dt
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
+emotion_list = ("angry", "fearful", "surprised", "happy", "neutral", "sad", "disgusted")
 
 @login_manager.user_loader
 def get_user(id):
     return User.query.get(id)
-
 
 class Prediction(db.Model):
     __tablename__ = "prediction"
@@ -43,11 +43,11 @@ class Prediction(db.Model):
         return fk_user_id
 
     @validates("emotion")
-    def validate_file_path(self, _, emotion):
+    def validate_emotion(self, _, emotion):
         if type(emotion) is not str:
             raise AssertionError("Emotion must be a String")
-        if len(emotion) <= 0:
-            raise AssertionError("Emotion must not be empty")
+        if emotion not in emotion_list:
+            raise AssertionError("Emotion is not recognised")
         return emotion
 
     @validates("file_path")
@@ -58,13 +58,35 @@ class Prediction(db.Model):
             raise AssertionError("File path must not be empty")
         return file_path
 
-    # Validate PickleType here
-    # ...
+    @validates("prediction")
+    def validate_prediction(self, _, prediction):
+        if type(prediction) not in [dict, list]:
+            raise AssertionError("Prediction must be a Dictionary or List")
+        
+        # List is used to display using Jinjja
+        if type(prediction) is dict:
+            if len(prediction.keys()) != 7:
+                    raise AssertionError("Prediction must contain 7 emotions")
+            for e in emotion_list:
+                if type(e) is not str:
+                    raise AssertionError("Prediction confidence key must a string")
+                if e not in prediction:
+                    raise AssertionError("Prediction must contain all pre-defined emotions")
+                if type(prediction[e]) not in [float, int]:
+                    raise AssertionError("Prediction confidence must be a float or int")
+                if prediction[e] < 0 or prediction[e] > 1:
+                    raise AssertionError("Prediction must be between 0 and 1")
+        
+        return prediction
 
     @validates("predicted_on")
     def validate_predicted_on(self, key, predicted_on):
         if type(predicted_on) is not dt:
             raise AssertionError("Date of Prediction must be a datetime")
+        if predicted_on > dt.now():
+            raise AssertionError("Date of Prediction must be in the past")
+        if predicted_on < dt(2022,1,31): # Date of app creation
+            raise AssertionError("Date of Prediction must be after 31/01/2022")
         return predicted_on
 
 
