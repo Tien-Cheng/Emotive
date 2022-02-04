@@ -132,7 +132,11 @@ def plot_history(history):
             fig.add_trace(
                 go.Histogram(
                     name=emotion.capitalize(),
-                    x=[i.predicted_on for i in history if i.prediction[0][0].lower() == emotion],
+                    x=[
+                        i.predicted_on
+                        for i in history
+                        if i.prediction[0][0].lower() == emotion
+                    ],
                     nbinsx=20,
                     marker_line_width=1.5,
                     marker_line_color="white",
@@ -146,7 +150,8 @@ def plot_history(history):
                 x=dates,
                 y=cumulative_score,
                 text=emotions,
-            )
+                visible=False
+            ),
         )
         fig.update_layout(
             updatemenus=[
@@ -194,9 +199,14 @@ def plot_history(history):
             ]
         )
 
-        fig.update_layout(paper_bgcolor="white", plot_bgcolor="white")
+        fig.update_layout(
+            paper_bgcolor="white",
+            plot_bgcolor="white",
+            barmode="stack",
+        )
         fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor="#E5E5E5")
-        fig.update_layout(margin=dict(l=10, b=10, r=130, t=20))
+        fig.update_layout(margin=dict(l=10, b=10, r=130, t=30))
+        fig['layout']['updatemenus'][0]['pad']=dict(r= 10, t= 5)
 
         html_file_path = f"{getcwd()}/application/static/file.html"
 
