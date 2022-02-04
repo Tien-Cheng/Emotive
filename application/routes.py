@@ -115,7 +115,7 @@ def plot_history(history):
             "disgusted": "#7F68F4",
         }
 
-        emotion_score_map = {
+        emotion_score_map = {  # Map negative emotions to -1, positive emotions to 1, neutral emotions to 0
             "angry": -1,
             "happy": 1,
             "neutral": 0,
@@ -124,11 +124,19 @@ def plot_history(history):
             "fearful": -1,
             "disgusted": -1,
         }
-        emotions = [i.prediction[0][0] for i in history]
-        scores = [emotion_score_map.get(i.lower(), 0) for i in emotions]
-        dates = [i.predicted_on for i in history]
-        cumulative_score = np.cumsum(scores)
-        for emotion in emotion_list:
+        emotions = [
+            i.prediction[0][0] for i in history
+        ]  # List of Emotions for Items in History
+        scores = [
+            emotion_score_map.get(i.lower(), 0) for i in emotions
+        ]  # List of "Scores" for Items in History
+        dates = [
+            i.predicted_on for i in history
+        ]  # List of Datetimes which Predictions were taken
+        cumulative_score = np.cumsum(
+            scores
+        )  # Cumulative Sum of Scores (Net Emotional Indicator)
+        for emotion in emotion_list:  # Plot Histogram
             fig.add_trace(
                 go.Histogram(
                     name=emotion.capitalize(),
@@ -143,17 +151,17 @@ def plot_history(history):
                     marker_color=emotion_color_map[emotion],
                 )
             )
-        fig.add_trace(
+        fig.add_trace(  # Plot Lineplot of Net Emotional Indicator
             go.Scatter(
                 name="Net Emotional Indicator",
                 mode="lines+markers",
                 x=dates,
                 y=cumulative_score,
                 text=emotions,
-                visible=False
+                visible=False,  # By default, show histogram
             ),
         )
-        fig.update_layout(
+        fig.update_layout(  # Add an update menu to allow the selection of different plots
             updatemenus=[
                 dict(
                     buttons=[
@@ -162,7 +170,7 @@ def plot_history(history):
                             method="update",
                             args=[
                                 dict(
-                                    visible=[
+                                    visible=[  # Make histograms visible
                                         True,
                                         True,
                                         True,
@@ -170,7 +178,7 @@ def plot_history(history):
                                         True,
                                         True,
                                         True,
-                                        False,
+                                        False,  # Hide line plot
                                     ],
                                 ),
                                 dict(barmode="stack"),
@@ -206,24 +214,25 @@ def plot_history(history):
         )
         fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor="#E5E5E5")
         fig.update_layout(margin=dict(l=10, b=10, r=130, t=30))
-        fig['layout']['updatemenus'][0]['pad']=dict(r= 10, t= 5)
+        fig["layout"]["updatemenus"][0]["pad"] = dict(
+            r=10, t=5
+        )  # Set location of plot selection menu
 
         html_file_path = f"{getcwd()}/application/static/file.html"
 
         plotly.offline.plot(
             fig, include_plotlyjs=False, filename=html_file_path, auto_open=False
-        )
+        )  # Generate HTML tfor plot embedding
 
         plotly_txt = '<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>'
 
         with open(html_file_path, "r+") as f:
             content = f.read()
             f.seek(0, 0)
-            f.write(plotly_txt + "\n" + content)
+            f.write(plotly_txt + "\n" + content)  # Add plotly.js
     except Exception as e:
         print(e)
     return html_file_path
-
 
 
 # ===== Error Handler ===== >>>
