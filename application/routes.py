@@ -225,54 +225,6 @@ def plot_history(history):
     return html_file_path
 
 
-def plot_net_emotions(history):
-    fig = go.Figure()
-
-    emotion_score_map = {
-        "angry": -1,
-        "happy": 1,
-        "neutral": 0,
-        "surprised": 0,
-        "sad": -1,
-        "fearful": -1,
-        "disgusted": -1,
-    }
-    emotions = [i.prediction[0][0] for i in history]
-    scores = [emotion_score_map.get(i.lower(), 0) for i in emotions]
-
-    cumulative_score = np.cumsum(scores)
-
-    fig.add_trace(
-        go.Scatter(
-            name="Net Emotion Score",
-            mode="lines+markers",
-            x=[
-                i.predicted_on for i in history if i.prediction[0][0].lower() == emotion
-            ],
-            y=cumulative_score,
-            text=emotions,
-        )
-    )
-
-    fig.update_layout(paper_bgcolor="white", plot_bgcolor="white")
-    fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor="#E5E5E5")
-    fig.update_layout(margin=dict(l=10, b=10, r=130, t=20))
-
-    html_file_path = f"{getcwd()}/application/static/net_emotion_plot.html"
-
-    plotly.offline.plot(
-        fig, include_plotlyjs=False, filename=html_file_path, auto_open=False
-    )
-
-    plotly_txt = '<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>'
-
-    with open(html_file_path, "r+") as f:
-        content = f.read()
-        f.seek(0, 0)
-        f.write(plotly_txt + "\n" + content)
-
-    return html_file_path
-
 
 # ===== Error Handler ===== >>>
 
