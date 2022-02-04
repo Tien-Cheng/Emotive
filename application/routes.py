@@ -10,8 +10,17 @@ import numpy as np
 import plotly
 import plotly.graph_objects as go
 import requests
-from flask import (flash, abort, json, jsonify, make_response, redirect,
-                   render_template, request, url_for)
+from flask import (
+    flash,
+    abort,
+    json,
+    jsonify,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from flask_login import current_user, login_user, logout_user
 from PIL import Image
 from plotly.subplots import make_subplots
@@ -93,53 +102,116 @@ with open("./application/static/quotes.json") as f:
 
 # Plot User Activity
 def plot_history(history):
+    try:
+        fig = go.Figure()
 
-    fig = go.Figure()
+        emotion_color_map = {
+            "angry": "#FF5858",
+            "happy": "#55F855",
+            "neutral": "#57D9F1",
+            "surprised": "#FFE858",
+            "sad": "#629AF3",
+            "fearful": "#FFB858",
+            "disgusted": "#7F68F4",
+        }
 
-    emotion_color_map = {
-        "angry": "#FF5858",
-        "happy": "#55F855",
-        "neutral": "#57D9F1",
-        "surprised": "#FFE858",
-        "sad": "#629AF3",
-        "fearful": "#FFB858",
-        "disgusted": "#7F68F4",
-    }
-
-    for emotion in emotion_list:
-
+        emotion_score_map = {
+            "angry": -1,
+            "happy": 1,
+            "neutral": 0,
+            "surprised": 0,
+            "sad": -1,
+            "fearful": -1,
+            "disgusted": -1,
+        }
+        emotions = [i.prediction[0][0] for i in history]
+        scores = [emotion_score_map.get(i.lower(), 0) for i in emotions]
+        dates = [i.predicted_on for i in history]
+        cumulative_score = np.cumsum(scores)
+        for emotion in emotion_list:
+            fig.add_trace(
+                go.Histogram(
+                    name=emotion.capitalize(),
+                    x=[i.predicted_on for i in history if i.prediction[0][0].lower() == emotion],
+                    nbinsx=20,
+                    marker_line_width=1.5,
+                    marker_line_color="white",
+                    marker_color=emotion_color_map[emotion],
+                )
+            )
         fig.add_trace(
-            go.Histogram(
-                name=emotion.capitalize(),
-                x=[
-                    i.predicted_on
-                    for i in history
-                    if i.prediction[0][0].lower() == emotion
-                ],
-                nbinsx=20,
-                marker_line_width=1.5,
-                marker_line_color="white",
-                marker_color=emotion_color_map[emotion],
+            go.Scatter(
+                name="Net Emotional Indicator",
+                mode="lines+markers",
+                x=dates,
+                y=cumulative_score,
+                text=emotions,
             )
         )
+        fig.update_layout(
+            updatemenus=[
+                dict(
+                    buttons=[
+                        dict(
+                            label="Histogram",
+                            method="update",
+                            args=[
+                                dict(
+                                    visible=[
+                                        True,
+                                        True,
+                                        True,
+                                        True,
+                                        True,
+                                        True,
+                                        True,
+                                        False,
+                                    ],
+                                ),
+                                dict(barmode="stack"),
+                            ],
+                        ),
+                        dict(
+                            label="Net Emotional Indicator",
+                            method="update",
+                            args=[
+                                dict(
+                                    visible=[
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        True,
+                                    ],
+                                )
+                            ],
+                        ),
+                    ]
+                )
+            ]
+        )
 
-    fig.update_layout(paper_bgcolor="white", plot_bgcolor="white", barmode="stack")
-    fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor="#E5E5E5")
-    fig.update_layout(margin=dict(l=10, b=10, r=130, t=20))
+        fig.update_layout(paper_bgcolor="white", plot_bgcolor="white")
+        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor="#E5E5E5")
+        fig.update_layout(margin=dict(l=10, b=10, r=130, t=20))
 
-    html_file_path = f"{getcwd()}/application/static/file.html"
+        html_file_path = f"{getcwd()}/application/static/file.html"
 
-    plotly.offline.plot(
-        fig, include_plotlyjs=False, filename=html_file_path, auto_open=False
-    )
+        plotly.offline.plot(
+            fig, include_plotlyjs=False, filename=html_file_path, auto_open=False
+        )
 
-    plotly_txt = '<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>'
+        plotly_txt = '<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>'
 
-    with open(html_file_path, "r+") as f:
-        content = f.read()
-        f.seek(0, 0)
-        f.write(plotly_txt + "\n" + content)
-
+        with open(html_file_path, "r+") as f:
+            content = f.read()
+            f.seek(0, 0)
+            f.write(plotly_txt + "\n" + content)
+    except Exception as e:
+        print(e)
     return html_file_path
 
 
@@ -155,12 +227,8 @@ def plot_net_emotions(history):
         "fearful": -1,
         "disgusted": -1,
     }
-    emotions = [
-        i.prediction[0][0] for i in history
-    ]
-    scores = [
-        emotion_score_map.get(i.lower(), 0) for i in emotions
-    ]
+    emotions = [i.prediction[0][0] for i in history]
+    scores = [emotion_score_map.get(i.lower(), 0) for i in emotions]
 
     cumulative_score = np.cumsum(scores)
 
@@ -169,15 +237,13 @@ def plot_net_emotions(history):
             name="Net Emotion Score",
             mode="lines+markers",
             x=[
-                    i.predicted_on
-                    for i in history
-                    if i.prediction[0][0].lower() == emotion
-                ],
+                i.predicted_on for i in history if i.prediction[0][0].lower() == emotion
+            ],
             y=cumulative_score,
-            text=emotions
+            text=emotions,
         )
     )
-    
+
     fig.update_layout(paper_bgcolor="white", plot_bgcolor="white")
     fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor="#E5E5E5")
     fig.update_layout(margin=dict(l=10, b=10, r=130, t=20))
@@ -196,7 +262,10 @@ def plot_net_emotions(history):
         f.write(plotly_txt + "\n" + content)
 
     return html_file_path
+
+
 # ===== Error Handler ===== >>>
+
 
 @app.errorhandler(Exception)
 def error_handler(error):
@@ -204,7 +273,10 @@ def error_handler(error):
         error = InternalServerError
         error.name = "Internal Server Error"
         error.code = 500
-    return render_template("error.html", error=error, page="error", userInfo=current_user), error.code
+    return (
+        render_template("error.html", error=error, page="error", userInfo=current_user),
+        error.code,
+    )
 
 
 # ===== Routes ===== >>>
@@ -230,11 +302,11 @@ def homepage():
         )
     )
 
-    if 'autoCapture' in request.cookies:
-        resp.set_cookie('autoCapture', request.cookies.get('autoCapture'))
+    if "autoCapture" in request.cookies:
+        resp.set_cookie("autoCapture", request.cookies.get("autoCapture"))
     else:
         resp.set_cookie("autoCapture", "ON")
-        
+
     return resp
 
 
@@ -385,7 +457,7 @@ def predict():
         faceCascade = cv2.CascadeClassifier(
             cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
         )
-        
+
         faces = faceCascade.detectMultiScale(
             gray, scaleFactor=1.3, minNeighbors=3, minSize=(30, 30)
         )
@@ -396,7 +468,7 @@ def predict():
             os.remove(imgPathExt)
             flash("No face detected!", "red")
             return redirect(url_for("predict"))
-        
+
         elif len(faces) > 1:
 
             os.remove(imgPathExt)
@@ -404,9 +476,11 @@ def predict():
             return redirect(url_for("predict"))
 
         for (x, y, w, h) in faces:
-            
-            cv2.rectangle(image, (x-5,y-5), (x+w+5,y+h+5), (255,59,86), 2)
-            roi_gray = gray[y:y+h, x:x+w]
+
+            cv2.rectangle(
+                image, (x - 5, y - 5), (x + w + 5, y + h + 5), (255, 59, 86), 2
+            )
+            roi_gray = gray[y : y + h, x : x + w]
 
         # === Send image to TF model server ===>
 
@@ -417,13 +491,13 @@ def predict():
 
         json_response = requests.post(
             "https://doaa-ca2-emotive-model.herokuapp.com/v1/models/img_classifier:predict",
-            data = json.dumps(
+            data=json.dumps(
                 {
                     "signature_name": "serving_default",
                     "instances": data_instance.tolist(),
                 }
             ),
-            headers = {"content-type": "application/json"}
+            headers={"content-type": "application/json"},
         )
 
         predictions = json.loads(json_response.text)["predictions"]
@@ -633,12 +707,19 @@ def dashboard():
 
         emotion = history[i].prediction[0][0].lower()
         emotion_counter[emotion] += 1
-        
+
         try:
-            data_usage_mb += (os.path.getsize(f"{getcwd()}/application/static/images/{history[i].file_path}") / 1e6)
+            data_usage_mb += (
+                os.path.getsize(
+                    f"{getcwd()}/application/static/images/{history[i].file_path}"
+                )
+                / 1e6
+            )
         except FileNotFoundError:
-            print(f"{getcwd()}/application/static/images/{history[i].file_path} not found")
-        
+            print(
+                f"{getcwd()}/application/static/images/{history[i].file_path} not found"
+            )
+
         if est_face[emotion] == None:
             est_face[emotion] = history[i]
         elif est_face[emotion].prediction[0][1] < history[i].prediction[0][1]:
@@ -713,7 +794,7 @@ def api_predict():
     faceCascade = cv2.CascadeClassifier(
         cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
     )
-    
+
     faces = faceCascade.detectMultiScale(
         gray, scaleFactor=1.3, minNeighbors=3, minSize=(30, 30)
     )
@@ -722,18 +803,14 @@ def api_predict():
 
         os.remove(imgPath)  # Remove image from directory
         return jsonify({"error": "No face detected"})
-    
+
     elif len(faces) > 1:
 
         os.remove(imgPath)
         return jsonify({"error": "Multiple faces detected"})
 
-    for idx, (x, y, w, h) in enumerate(
-        faces
-    ):
-        cv2.rectangle(
-            image, (x - 5, y - 5), (x + w + 5, y + h + 5), (255, 59, 86), 2
-        )
+    for idx, (x, y, w, h) in enumerate(faces):
+        cv2.rectangle(image, (x - 5, y - 5), (x + w + 5, y + h + 5), (255, 59, 86), 2)
         roi_gray = gray[y : y + h, x : x + w]
 
         # Cropped black and white face
@@ -795,6 +872,7 @@ def api_predict():
 
     return jsonify(history)
 
+
 # API for adding history
 @app.route("/api/history/add", methods=["GET"])
 def api_add_history():
@@ -844,8 +922,9 @@ def api_get_all_history():
 
     for i, p in enumerate(history.items):
         history.items[i].prediction = sort_prediction(p.prediction)
-    
+
     return jsonify(history)
+
 
 # API for getting history by id
 @app.route("/api/history/get/<int:history_id>", methods=["GET"])
@@ -862,7 +941,7 @@ def api_get_history(history_id):
 # API for deleting history
 @app.route("/api/history/delete/<int:history_id>", methods=["GET"])
 def api_delete_history(history_id):
-    
+
     history = Prediction.query.filter_by(id=history_id).first()
 
     # Check if history exist
@@ -877,6 +956,7 @@ def api_delete_history(history_id):
 
     else:
         return jsonify({"error": "History not found"})
+
 
 # ========= APIs Users =========
 
@@ -899,6 +979,7 @@ def api_user_add():
     # Return the result of the db action
     return jsonify({"id": user_id})
 
+
 # API get users
 @app.route("/api/user-get/<id>", methods=["GET"])
 def api_user_get(id):
@@ -916,6 +997,7 @@ def api_user_get(id):
     # Convert the data to json
     result = jsonify(data)
     return result
+
 
 # API get all users
 @app.route("/api/get-users", methods=["GET"])
