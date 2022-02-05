@@ -135,31 +135,22 @@ def plot_history(history):
         
         # List of Emotions for Items in History
         sorted_history = sorted(history, key=lambda x : x.predicted_on)
-        print('hello1')
 
         dates = [h.predicted_on for h in sorted_history]
-        print('hello12')
         net = [emotion_score_map[h.prediction[0][0].lower()] for h in sorted_history]
-        print('hello123')
 
         df = pd.DataFrame({"dates": dates, "net": net})
-        print('hello1234')
 
         try:
 
             binned_dates = pd.to_datetime(np.linspace(pd.Timestamp(dates[0]).value, pd.Timestamp(dates[-1]).value, 17))
-            print('hello12345')
             net_emotion = []
-            print('hello123456')
 
             for idx, bd in enumerate(binned_dates[1:]):
-                print('hello1234567')
                 net_emotion.append(df[(binned_dates[idx] < df.dates) & (df.dates <= bd)].net.sum())
-                print('hello123456789')
 
             colours = ['#55F855' if i > 0 else '#FF5858' for i in net_emotion]
             binned_dates = binned_dates[1:]
-            print('hello12345678910')
         
         except:
 
@@ -276,18 +267,18 @@ def plot_history(history):
 
 # ===== Error Handler ===== #
 
-# @app.errorhandler(Exception)
-# def error_handler(error):
+@app.errorhandler(Exception)
+def error_handler(error):
     
-#     if not hasattr(error, "name") or not hasattr(error, "code"):
-#         error = InternalServerError
-#         error.name = "Internal Server Error"
-#         error.code = 500
+    if not hasattr(error, "name") or not hasattr(error, "code"):
+        error = InternalServerError
+        error.name = "Internal Server Error"
+        error.code = 500
     
-#     return (
-#         render_template("error.html", error=error, page="error", userInfo=current_user),
-#         error.code,
-#     )
+    return (
+        render_template("error.html", error=error, page="error", userInfo=current_user),
+        error.code,
+    )
 
 
 
