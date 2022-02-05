@@ -63,7 +63,6 @@ class Prediction(db.Model):
         if type(prediction) not in [dict, list]:
             raise AssertionError("Prediction must be a Dictionary or List")
         
-        # List is used to display using Jinjja
         if type(prediction) is dict:
             if len(prediction.keys()) != 7:
                     raise AssertionError("Prediction must contain 7 emotions")
@@ -71,10 +70,25 @@ class Prediction(db.Model):
                 if type(e) is not str:
                     raise AssertionError("Prediction confidence key must a string")
                 if e not in prediction:
-                    raise AssertionError("Prediction must contain all pre-defined emotions")
+                    raise AssertionError("Prediction emotion is not recognised")
                 if type(prediction[e]) not in [float, int]:
                     raise AssertionError("Prediction confidence must be a float or int")
                 if prediction[e] < 0 or prediction[e] > 1:
+                    raise AssertionError("Prediction must be between 0 and 1")
+        
+        if type(prediction) is list:
+            if len(prediction) != 7:
+                    raise AssertionError("Prediction must contain 7 emotions")
+            for e in prediction:
+                if len(e) != 2:
+                    raise AssertionError("Prediction must be a list of tuples of length 2")
+                if type(e[0]) is not str:
+                    raise AssertionError("Prediction emotion must be a string")
+                if e[0].lower() not in emotion_list:
+                    raise AssertionError("Prediction emotion is not recognised")
+                if type(e[1]) not in [int, float]:
+                    raise AssertionError("Prediction confidence must be a float")
+                if e[1] < 0 or e[1] > 1:
                     raise AssertionError("Prediction must be between 0 and 1")
         
         return prediction
@@ -85,8 +99,8 @@ class Prediction(db.Model):
             raise AssertionError("Date of Prediction must be a datetime")
         if predicted_on > dt.now():
             raise AssertionError("Date of Prediction must be in the past")
-        if predicted_on < dt(2022,1,31): # Date of app creation
-            raise AssertionError("Date of Prediction must be after 31/01/2022")
+        if predicted_on < dt(2020,1,1):
+            raise AssertionError("Date of Prediction must be after 01/01/2020")
         return predicted_on
 
 

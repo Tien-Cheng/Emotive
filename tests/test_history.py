@@ -53,8 +53,8 @@ def test_PredClass(predlist, capsys):
     [3, 1, "happy", "happy.jpg", conf_to_dict([0.1, 0.2, 0.3, 0.4, 1.5, 0.6, 0.7]), dt.now()],
     [3, 1, "happy", "happy.jpg", conf_to_dict([0.1, 0.2, 0.3, 0.4, 0.5, 1.6, 0.7]), dt.now()],
     [3, 1, "happy", "happy.jpg", conf_to_dict([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 1.7]), dt.now()],
-    # Predicted_on < 31/01/2022
-    [3, 1, "happy", "happy.jpg", conf_to_dict([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]), dt(2022,1,31) - timedelta(days=1)],
+    # Predicted_on < 01/01/2020
+    [3, 1, "happy", "happy.jpg", conf_to_dict([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]), dt(2020,1,1) - timedelta(days=1)],
     # Predicted_on > now
     [3, 1, "happy", "happy.jpg", conf_to_dict([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]), dt.now() + timedelta(days=1)],
     # Unrecognised emotion

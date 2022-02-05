@@ -263,6 +263,11 @@ def demo():
         flash("Unauthorized: You're not logged in!", "red")
         return redirect(url_for("login"))
     
+    # If there are enough histories, don't populate the database
+    if db.session.query(Prediction).count() > 50:
+        flash("Demo database already populated!", "info")
+        return redirect(url_for("dashboard"))
+
     # Get a random date since a month ago
     def random_date():
         delta = timedelta(days=30)
@@ -898,15 +903,17 @@ def api_predict():
     return jsonify(history)
 
 
+# ========= APIs Predictions =========
+
 # API for adding history
-@app.route("/api/history/add", methods=["GET"])
+@app.route("/api/history/add", methods=["POST"])
 def api_add_history():
     # Retrieve the json file posted from client
     data = request.get_json()
 
     # Add the history to the database
     history = Prediction(
-        fk_user_id=int(1),
+        fk_user_id=data["fk_user_id"],
         emotion=data["emotion"],
         file_path=data["file_path"],
         prediction=data["prediction"],
@@ -917,10 +924,27 @@ def api_add_history():
 
     return jsonify({"id": hist_id})
 
+# API for getting history by id
+@app.route("/api/history/get/<int:history_id>", methods=["GET"])
+def api_get_history(history_id):
+
+    # Get the history from the database
+    history = Prediction.query.filter_by(id=history_id).first()
+
+    data = {
+        "id": history.id,
+        "fk_user_id": history.fk_user_id,
+        "emotion": history.emotion,
+        "file_path": history.file_path,
+        "prediction": history.prediction
+    }
+
+    return jsonify(data)
 
 # API for getting all history
-@app.route("/api/history", methods=["GET"])
-def api_get_all_history():
+@app.route("/api/history/<int:user_id>", methods=["GET"])
+def api_get_all_history(user_id):
+
 
     page = int(request.args.get("page", 1))
     per_page = int(request.args.get("per_page", 9))
@@ -937,7 +961,7 @@ def api_get_all_history():
             emotion_filter[e] = int(request.args.get(f"c{e.capitalize()}", 0))
 
     history = get_history(
-        current_user.id,
+        user_id,
         page,
         per_page,
         col_sort,
@@ -945,34 +969,27 @@ def api_get_all_history():
         [k for k, v in emotion_filter.items() if v == 1],
     )
 
-    for i, p in enumerate(history.items):
-        history.items[i].prediction = sort_prediction(p.prediction)
+    histories = []
 
-    return jsonify(history)
+    for h in history.items:
+        histories.append({
+            "id": h.id,
+            "fk_user_id": h.fk_user_id,
+            "emotion": h.emotion,
+            "file_path": h.file_path,
+            "prediction": h.prediction
+        })
 
-
-# API for getting history by id
-@app.route("/api/history/get/<int:history_id>", methods=["GET"])
-def api_get_history(history_id):
-
-    history_id = request.arg
-
-    # Get the history from the database
-    history = Prediction.query.filter_by(id=history_id).first()
-
-    return jsonify(history)
-
+    return jsonify(histories)
 
 # API for deleting history
-@app.route("/api/history/delete/<int:history_id>", methods=["GET"])
+@app.route("/api/history/delete/<int:history_id>", methods=["DELETE"])
 def api_delete_history(history_id):
 
     history = Prediction.query.filter_by(id=history_id).first()
 
     # Check if history exist
     if history:
-        # Remove image from the folder
-        os.remove(f"./application/static/images/{history.file_path}")
 
         Prediction.query.filter_by(id=history_id).delete()
         db.session.commit()

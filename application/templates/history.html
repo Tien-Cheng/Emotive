@@ -161,8 +161,8 @@
 
     {% endif %}
 
-    {% if not history %}
-        <h5 class="text-center mt-5">Your have no predictions yet!</h5>
+    {% if history.items|length == 0 %}
+        <h5 class="text-center mt-5">No predictions found</h5>
         <div class="mx-auto mt-4 no-pred-btn-cont">
             <a href="/predict">
                 <button class="btn bg-purple text-white w-100">Start Predicting!</button>
