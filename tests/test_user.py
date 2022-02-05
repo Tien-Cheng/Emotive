@@ -38,7 +38,7 @@ def test_UserClassValidation_missing(userlist, capsys):
     test_UserClass(userlist, capsys)
 
 
-@pytest.mark.xfail(reason="Invalid inputs", strict=True)
+@pytest.mark.xfail(reason="Invalid inputs", strict=True) # Out of Range Inputs
 @pytest.mark.parametrize(
     "userlist",
     [["yeet111", "password"], ["", "empty username"], ["empty password", ""], ["", ""]],
