@@ -164,10 +164,9 @@
             <div class="d-flex flex-column flex-md-row align-items-center justify-content-center w-100">
                 <!-- Activity -->
                 <div class="p-2">
-                    <div class="dash-cont position-relative overflow-hidden">
+                    <div class="dash-cont position-relative overflow-hidden p-0">
                         {% if html_file_path != None %}
-                        <div
-                            class="position-absolute top-0 end-0 mx-auto d-flex align-items-center justify-content-center">
+                        <div class="embed-plotly position-absolute top-0 end-0 mx-auto d-flex align-items-center justify-content-center">
                             <embed src="{{url_for('static', filename='file.html')}}" type="text/html" width="733"
                                 height="234" />
                         </div>

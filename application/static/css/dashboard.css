@@ -116,6 +116,11 @@
     top: 110%;
 }
 
+.embed-plotly {
+    position: relative !important;
+    margin-top: 35px;
+}
+
 @media (min-width: 768px) {
     .dashboard-options { width: 1300px; padding-right: 20px; }
     .dash-rhs { max-width: 230px; height: 500px; }
@@ -126,6 +131,7 @@
     .dash-lhs > div:nth-of-type(2) > div:nth-of-type(2) { width: 30%;}
     .dash-rhs { max-width: 230px; }
     .est-face-cont { height: 100%; }
+    .embed-plotly { position: absolute !important; margin-top: 0px; }
     .carousel-control-next { top: 0; height: 100%; transform: translateX(30%) translateY(7%); }
     .carousel-control-prev { top: 0; height: 100%; transform: translateX(-30%) translateY(7%); }
 }

@@ -9,6 +9,7 @@ from os import getcwd
 
 import cv2
 import numpy as np
+import pandas as pd
 import plotly
 import plotly.graph_objects as go
 import requests
@@ -97,6 +98,7 @@ with open("./application/static/quotes.json") as f:
 
 # Plot User Activity
 def plot_history(history):
+
     try:
         fig = go.Figure()
 
@@ -110,28 +112,58 @@ def plot_history(history):
             "disgusted": "#7F68F4",
         }
 
-        emotion_score_map = {  # Map negative emotions to -1, positive emotions to 1, neutral emotions to 0
+        emotion_score_map = {
             "angry": -1,
             "happy": 1,
-            "neutral": 0,
-            "surprised": 0,
-            "sad": -1,
-            "fearful": -1,
-            "disgusted": -1,
+            "neutral": 0.5,
+            "surprised": 0.2,
+            "sad": -0.2,
+            "fearful": -0.3,
+            "disgusted": -0.5,
         }
 
-        # List of Emotions for Items in History
-        sorted_history = sorted(history, key=lambda x : x.predicted_on)
-        emotions = [i.prediction[0][0] for i in sorted_history]
+        # emotions = [i.prediction[0][0] for i in sorted_history]
         
         # # List of "Scores" for Items in History
-        scores = [emotion_score_map.get(i.lower(), 0) for i in emotions]
+        # scores = [emotion_score_map.get(i.lower(), 0) for i in emotions]
         
-        # List of Datetimes which Predictions were taken
-        dates = [i.predicted_on for i in sorted_history]
+        # # List of Datetimes which Predictions were taken
+        # dates = [i.predicted_on for i in sorted_history]
         
-        # Cumulative Sum of Scores (Net Emotional Indicator)
-        cumulative_score = np.cumsum(scores)
+        # # Cumulative Sum of Scores (Net Emotional Indicator)
+        # cumulative_score = np.cumsum(scores)
+        
+        # List of Emotions for Items in History
+        sorted_history = sorted(history, key=lambda x : x.predicted_on)
+        print('hello1')
+
+        dates = [h.predicted_on for h in sorted_history]
+        print('hello12')
+        net = [emotion_score_map[h.prediction[0][0].lower()] for h in sorted_history]
+        print('hello123')
+
+        df = pd.DataFrame({"dates": dates, "net": net})
+        print('hello1234')
+
+        try:
+
+            binned_dates = pd.to_datetime(np.linspace(pd.Timestamp(dates[0]).value, pd.Timestamp(dates[-1]).value, 17))
+            print('hello12345')
+            net_emotion = []
+            print('hello123456')
+
+            for idx, bd in enumerate(binned_dates[1:]):
+                print('hello1234567')
+                net_emotion.append(df[(binned_dates[idx] < df.dates) & (df.dates <= bd)].net.sum())
+                print('hello123456789')
+
+            colours = ['#55F855' if i > 0 else '#FF5858' for i in net_emotion]
+            binned_dates = binned_dates[1:]
+            print('hello12345678910')
+        
+        except:
+
+            net_emotion, binned_dates, colours = [], [], []
         
         # Plot Histogram
         for emotion in emotion_list:
@@ -150,45 +182,60 @@ def plot_history(history):
                 )
             )
         
-        # Plot Lineplot of Net Emotional Indicator
-        fig.add_trace(
-            go.Scatter(
-                name="Net Emotional Indicator",
-                mode="lines+markers",
-                x=dates,
-                y=cumulative_score,
-                text=emotions,
-                visible=False,  # [default] show histogram
-            ),
-        )
+        # # Plot Lineplot of Net Emotional Indicator
+        # fig.add_trace(
+        #     go.Scatter(
+        #         name="Net Emotional Indicator",
+        #         mode="lines+markers",
+        #         x=dates,
+        #         y=cumulative_score,
+        #         text=emotions,
+        #         visible=False,  # [default] show histogram
+        #     ),
+        # )
+
+        fig.add_trace(go.Bar(
+            name="Net Emotion",
+            y=net_emotion,
+            x=binned_dates,
+            marker_color=colours,
+            visible=False
+        ))
 
         # Add an update menu to allow the selection of different plots
-        fig.update_layout(updatemenus=[
-            dict(buttons=[
-                dict(
-                    label="Histogram",
-                    method="update",
-                    args=[
-                        # Make histograms visible and hide line plot
-                        dict(visible=[
-                            True,True,True,True,
-                            True,True,True,False
-                        ]),
-                        dict(barmode="stack"),
-                    ],
-                ),
-                dict(
-                    label="Net Emotional Indicator",
-                    method="update",
-                    args=[
-                        dict(visible=[
-                            False,False,False,False,
-                            False,False,False,True
-                        ])
-                    ],
-                ),
-            ])
-        ])
+        fig.update_layout(updatemenus=[dict(
+            type="buttons",
+            buttons=[
+            dict(
+                label="1",
+                method="update",
+                args=[
+                    # Make histograms visible and hide line plot
+                    dict(visible=[
+                        True,True,True,True,
+                        True,True,True,False
+                    ]),
+                    dict(
+                        barmode="stack",
+                        margin=dict(l=10, b=10, r=130, t=40)
+                    )
+                ],
+            ),
+            dict(
+                label="2",
+                method="update",
+                args=[
+                    dict(visible=[
+                        False,False,False,False,
+                        False,False,False,True
+                    ]),
+                    dict(
+                        hovermode="x",
+                        margin=dict(l=10, b=20, r=30, t=40)
+                    )
+                ],
+            )]
+        )])
 
         fig.update_layout(
             paper_bgcolor="white",
@@ -197,7 +244,7 @@ def plot_history(history):
         )
         
         fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor="#E5E5E5")
-        fig.update_layout(margin=dict(l=10, b=10, r=130, t=30))
+        fig.update_layout(margin=dict(l=10, b=10, r=130, t=40))
         
         # Set location of plot selection menu
         fig["layout"]["updatemenus"][0]["pad"] = dict(r=10, t=5) 
@@ -229,16 +276,18 @@ def plot_history(history):
 
 # ===== Error Handler ===== #
 
-@app.errorhandler(Exception)
-def error_handler(error):
-    if not hasattr(error, "name") or not hasattr(error, "code"):
-        error = InternalServerError
-        error.name = "Internal Server Error"
-        error.code = 500
-    return (
-        render_template("error.html", error=error, page="error", userInfo=current_user),
-        error.code,
-    )
+# @app.errorhandler(Exception)
+# def error_handler(error):
+    
+#     if not hasattr(error, "name") or not hasattr(error, "code"):
+#         error = InternalServerError
+#         error.name = "Internal Server Error"
+#         error.code = 500
+    
+#     return (
+#         render_template("error.html", error=error, page="error", userInfo=current_user),
+#         error.code,
+#     )
 
 
 
@@ -651,8 +700,10 @@ def delete_history():
             return redirect(url_for("history"))
 
         else:
+
             # Remove image from the folder
-            os.remove(f"./application/static/images/{history.file_path}")
+            try: os.remove(f"./application/static/images/{history.file_path}")
+            except: print("Image not found")
 
             Prediction.query.filter_by(id=history_id).delete()
             db.session.commit()
