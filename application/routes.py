@@ -33,7 +33,7 @@ from application import app, db
 from application.forms import LoginForm, RegisterForm
 from application.models import Prediction, User
 
-# ===== Functions and Global variables ===== >>>
+# ===== Functions and Global variables ===== #
 
 emotion_list = ("angry", "fearful", "surprised", "happy", "neutral", "sad", "disgusted")
 
@@ -51,7 +51,6 @@ def add_to_db(new_pred):
         flash(error, "danger")
         return None
 
-
 # Getting the histories in pages
 def get_history(
     user_id,
@@ -65,30 +64,25 @@ def get_history(
     try:
         order_by = column(order_by)
 
-        if desc:
-            order_by = order_by.desc()
-        else:
-            order_by = order_by.asc()
+        if desc: order_by = order_by.desc()
+        else: order_by = order_by.asc()
 
-        if emotion_filter == None:
-            emotion_filter = emotion_list
+        if emotion_filter == None: emotion_filter = emotion_list
 
         results = (
             db.session.query(Prediction)
             .filter(
-                Prediction.fk_user_id == user_id, Prediction.emotion.in_(emotion_filter)
+                Prediction.fk_user_id == user_id,
+                Prediction.emotion.in_(emotion_filter)
             )
             .order_by(order_by)
         )
 
-        if page is None:
-            return results.all()
-        else:
-            return results.paginate(page=page, per_page=per_page)
+        if page is None: return results.all()
+        else: return results.paginate(page=page, per_page=per_page)
 
     except Exception as error:
         flash(str(error), "danger")
-
 
 # Sorting the prediction dictionary by probabilities
 def sort_prediction(pred_dict):
@@ -96,7 +90,6 @@ def sort_prediction(pred_dict):
         (k.capitalize(), v)
         for k, v in sorted(pred_dict.items(), key=lambda item: item[1], reverse=True)
     ]
-
 
 # Quotes
 with open("./application/static/quotes.json") as f:
@@ -126,19 +119,21 @@ def plot_history(history):
             "fearful": -1,
             "disgusted": -1,
         }
-        emotions = [
-            i.prediction[0][0] for i in history
-        ]  # List of Emotions for Items in History
-        scores = [
-            emotion_score_map.get(i.lower(), 0) for i in emotions
-        ]  # List of "Scores" for Items in History
-        dates = [
-            i.predicted_on for i in history
-        ]  # List of Datetimes which Predictions were taken
-        cumulative_score = np.cumsum(
-            scores
-        )  # Cumulative Sum of Scores (Net Emotional Indicator)
-        for emotion in emotion_list:  # Plot Histogram
+
+        # List of Emotions for Items in History
+        emotions = [i.prediction[0][0] for i in history]
+        
+        # # List of "Scores" for Items in History
+        scores = [emotion_score_map.get(i.lower(), 0) for i in emotions]
+        
+        # List of Datetimes which Predictions were taken
+        dates = [i.predicted_on for i in history]
+        
+        # Cumulative Sum of Scores (Net Emotional Indicator)
+        cumulative_score = np.cumsum(scores)
+        
+        # Plot Histogram
+        for emotion in emotion_list:
             fig.add_trace(
                 go.Histogram(
                     name=emotion.capitalize(),
@@ -153,92 +148,85 @@ def plot_history(history):
                     marker_color=emotion_color_map[emotion],
                 )
             )
-        fig.add_trace(  # Plot Lineplot of Net Emotional Indicator
+        
+        # Plot Lineplot of Net Emotional Indicator
+        fig.add_trace(
             go.Scatter(
                 name="Net Emotional Indicator",
                 mode="lines+markers",
                 x=dates,
                 y=cumulative_score,
                 text=emotions,
-                visible=False,  # By default, show histogram
+                visible=False,  # [default] show histogram
             ),
         )
-        fig.update_layout(  # Add an update menu to allow the selection of different plots
-            updatemenus=[
+
+        # Add an update menu to allow the selection of different plots
+        fig.update_layout(updatemenus=[
+            dict(buttons=[
                 dict(
-                    buttons=[
-                        dict(
-                            label="Histogram",
-                            method="update",
-                            args=[
-                                dict(
-                                    visible=[  # Make histograms visible
-                                        True,
-                                        True,
-                                        True,
-                                        True,
-                                        True,
-                                        True,
-                                        True,
-                                        False,  # Hide line plot
-                                    ],
-                                ),
-                                dict(barmode="stack"),
-                            ],
-                        ),
-                        dict(
-                            label="Net Emotional Indicator",
-                            method="update",
-                            args=[
-                                dict(
-                                    visible=[
-                                        False,
-                                        False,
-                                        False,
-                                        False,
-                                        False,
-                                        False,
-                                        False,
-                                        True,
-                                    ],
-                                )
-                            ],
-                        ),
-                    ]
-                )
-            ]
-        )
+                    label="Histogram",
+                    method="update",
+                    args=[
+                        # Make histograms visible and hide line plot
+                        dict(visible=[
+                            True,True,True,True,
+                            True,True,True,False
+                        ]),
+                        dict(barmode="stack"),
+                    ],
+                ),
+                dict(
+                    label="Net Emotional Indicator",
+                    method="update",
+                    args=[
+                        dict(visible=[
+                            False,False,False,False,
+                            False,False,False,True
+                        ])
+                    ],
+                ),
+            ])
+        ])
 
         fig.update_layout(
             paper_bgcolor="white",
             plot_bgcolor="white",
             barmode="stack",
         )
+        
         fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor="#E5E5E5")
         fig.update_layout(margin=dict(l=10, b=10, r=130, t=30))
-        fig["layout"]["updatemenus"][0]["pad"] = dict(
-            r=10, t=5
-        )  # Set location of plot selection menu
+        
+        # Set location of plot selection menu
+        fig["layout"]["updatemenus"][0]["pad"] = dict(r=10, t=5) 
 
         html_file_path = f"{getcwd()}/application/static/file.html"
 
+        # Generate HTML for plot embedding
         plotly.offline.plot(
-            fig, include_plotlyjs=False, filename=html_file_path, auto_open=False
-        )  # Generate HTML tfor plot embedding
+            fig,
+            include_plotlyjs=False,
+            filename=html_file_path,
+            auto_open=False
+        )
 
         plotly_txt = '<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>'
 
+        # Add plotly.js
         with open(html_file_path, "r+") as f:
             content = f.read()
             f.seek(0, 0)
-            f.write(plotly_txt + "\n" + content)  # Add plotly.js
+            f.write(plotly_txt + "\n" + content)
+
     except Exception as e:
         print(e)
+    
     return html_file_path
 
 
-# ===== Error Handler ===== >>>
 
+# ===== Error Handler ===== #
 
 @app.errorhandler(Exception)
 def error_handler(error):
@@ -252,7 +240,8 @@ def error_handler(error):
     )
 
 
-# ===== Routes ===== >>>
+
+# ===== Routes ===== #
 
 # Populate the database with images for demonstration purposes
 @app.route("/demo", methods=["GET"])
@@ -276,6 +265,7 @@ def demo():
         random_second = np.random.randint(int_delta)
         return start + timedelta(seconds=random_second)
 
+    # Get a random image from the demo folder
     for idx in np.random.randint(7, size=100):
         
         emotion = emotion_list[idx]
@@ -314,7 +304,7 @@ def demo():
     flash("Demo images added successfully!", "green")
     return redirect(url_for("dashboard"))
 
-
+# Set cookie for auto capture
 @app.route("/set-cookie", methods=["GET"])
 def change_cookie():
     auto_capture = request.args.get("autoCapture")
@@ -324,19 +314,22 @@ def change_cookie():
     return resp
 
 
+# Route for homepage
 @app.route("/", methods=["GET"])
 def homepage():
 
-    resp = make_response(
-        render_template(
-            "index.html",
-            page="home",
-            userInfo=current_user,
-        )
-    )
+    resp = make_response(render_template(
+        "index.html",
+        page="home",
+        userInfo=current_user,
+    ))
 
     if "autoCapture" in request.cookies:
-        resp.set_cookie("autoCapture", request.cookies.get("autoCapture"))
+        resp.set_cookie(
+            "autoCapture",
+            request.cookies.get("autoCapture")
+        )
+    
     else:
         resp.set_cookie("autoCapture", "ON")
 
@@ -377,9 +370,12 @@ def register():
                 add_to_db(user_db)
 
                 flash("Registered! Try to login!", "green")
+            
             else:
                 flash("Account already exist. Try to login!", "dark")
+            
             return redirect(url_for("login"))
+        
         else:
             flash("Register failed!", "red")
 
@@ -407,8 +403,10 @@ def login():
             if user and user.verify_password(password):
                 login_user(user)
                 return redirect(url_for("predict"))
+            
             else:
                 flash("Login invalid!", "red")
+        
         else:
             flash("Login failed!", "red")
 
@@ -418,9 +416,12 @@ def login():
             return redirect(url_for("predict"))
 
     # If user is not authenticated
-    resp = make_response(
-        render_template("login.html", page="login", userInfo=current_user, form=form)
-    )
+    resp = make_response(render_template(
+        "login.html", 
+        page="login", 
+        userInfo=current_user, 
+        form=form
+    ))
 
     resp.set_cookie("autoCapture", "ON")
 
@@ -567,7 +568,10 @@ def predict():
         history.prediction = sort_prediction(history.prediction)
 
         return render_template(
-            "result.html", page="results", userInfo=current_user, history=history
+            "result.html",
+            page="results",
+            userInfo=current_user,
+            history=history
         )
 
     return render_template(
@@ -587,6 +591,7 @@ def history():
         flash("Unauthorized: You're not logged in!", "red")
         return redirect(url_for("login"))
 
+    # Get request arguments
     page = int(request.args.get("page", 1))
     per_page = int(request.args.get("per_page", 9))
     col_sort = request.args.get("col_sort", "predicted_on")
@@ -652,6 +657,7 @@ def delete_history():
             db.session.commit()
 
             flash(f"Deleted history with id = {history_id}!", "green")
+    
     else:
         flash(f"No history with id = {history_id}!", "red")
 
@@ -779,7 +785,7 @@ def dashboard():
     )
 
 
-# =========== APIs ===========
+# ========== APIs ========== #
 
 # API for prediction
 @app.route("/api/predict", methods=["POST"])
@@ -903,7 +909,7 @@ def api_predict():
     return jsonify(history)
 
 
-# ========= APIs Predictions =========
+# ===== APIs Predictions =====#
 
 # API for adding history
 @app.route("/api/history/add", methods=["POST"])
@@ -1000,7 +1006,7 @@ def api_delete_history(history_id):
         return jsonify({"error": "History not found"})
 
 
-# ========= APIs Users =========
+# ===== APIs Users ===== #
 
 # API: add users
 @app.route("/api/user-add", methods=["POST"])
@@ -1064,6 +1070,3 @@ def get_all_users():
 def api_user_delete(id):
     User.query.filter_by(id=id).delete()
     return jsonify({"result": "ok"})
-
-
-# ========== Others ==========
