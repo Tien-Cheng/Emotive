@@ -1,14 +1,18 @@
-from application import db, login_manager
-from sqlalchemy.orm import validates
 from datetime import datetime as dt
+
 from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.orm import validates
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from application import db, login_manager
 
 emotion_list = ("angry", "fearful", "surprised", "happy", "neutral", "sad", "disgusted")
+
 
 @login_manager.user_loader
 def get_user(id):
     return User.query.get(id)
+
 
 class Prediction(db.Model):
     __tablename__ = "prediction"
@@ -62,10 +66,10 @@ class Prediction(db.Model):
     def validate_prediction(self, _, prediction):
         if type(prediction) not in [dict, list]:
             raise AssertionError("Prediction must be a Dictionary or List")
-        
+
         if type(prediction) is dict:
             if len(prediction.keys()) != 7:
-                    raise AssertionError("Prediction must contain 7 emotions")
+                raise AssertionError("Prediction must contain 7 emotions")
             for e in emotion_list:
                 if type(e) is not str:
                     raise AssertionError("Prediction confidence key must a string")
@@ -75,13 +79,15 @@ class Prediction(db.Model):
                     raise AssertionError("Prediction confidence must be a float or int")
                 if prediction[e] < 0 or prediction[e] > 1:
                     raise AssertionError("Prediction must be between 0 and 1")
-        
+
         if type(prediction) is list:
             if len(prediction) != 7:
-                    raise AssertionError("Prediction must contain 7 emotions")
+                raise AssertionError("Prediction must contain 7 emotions")
             for e in prediction:
                 if len(e) != 2:
-                    raise AssertionError("Prediction must be a list of tuples of length 2")
+                    raise AssertionError(
+                        "Prediction must be a list of tuples of length 2"
+                    )
                 if type(e[0]) is not str:
                     raise AssertionError("Prediction emotion must be a string")
                 if e[0].lower() not in emotion_list:
@@ -90,7 +96,7 @@ class Prediction(db.Model):
                     raise AssertionError("Prediction confidence must be a float")
                 if e[1] < 0 or e[1] > 1:
                     raise AssertionError("Prediction must be between 0 and 1")
-        
+
         return prediction
 
     @validates("predicted_on")
@@ -99,7 +105,7 @@ class Prediction(db.Model):
             raise AssertionError("Date of Prediction must be a datetime")
         if predicted_on > dt.now():
             raise AssertionError("Date of Prediction must be in the past")
-        if predicted_on < dt(2020,1,1):
+        if predicted_on < dt(2020, 1, 1):
             raise AssertionError("Date of Prediction must be after 01/01/2020")
         return predicted_on
 

@@ -13,17 +13,8 @@ import pandas as pd
 import plotly
 import plotly.graph_objects as go
 import requests
-from flask import (
-    flash,
-    abort,
-    json,
-    jsonify,
-    make_response,
-    redirect,
-    render_template,
-    request,
-    url_for,
-)
+from flask import (abort, flash, json, jsonify, make_response, redirect,
+                   render_template, request, url_for)
 from flask_login import current_user, login_user, logout_user
 from PIL import Image
 from plotly.subplots import make_subplots
@@ -52,6 +43,7 @@ def add_to_db(new_pred):
         flash(error, "danger")
         return None
 
+
 # Getting the histories in pages
 def get_history(
     user_id,
@@ -65,25 +57,30 @@ def get_history(
     try:
         order_by = column(order_by)
 
-        if desc: order_by = order_by.desc()
-        else: order_by = order_by.asc()
+        if desc:
+            order_by = order_by.desc()
+        else:
+            order_by = order_by.asc()
 
-        if emotion_filter == None: emotion_filter = emotion_list
+        if emotion_filter == None:
+            emotion_filter = emotion_list
 
         results = (
             db.session.query(Prediction)
             .filter(
-                Prediction.fk_user_id == user_id,
-                Prediction.emotion.in_(emotion_filter)
+                Prediction.fk_user_id == user_id, Prediction.emotion.in_(emotion_filter)
             )
             .order_by(order_by)
         )
 
-        if page is None: return results.all()
-        else: return results.paginate(page=page, per_page=per_page)
+        if page is None:
+            return results.all()
+        else:
+            return results.paginate(page=page, per_page=per_page)
 
     except Exception as error:
         flash(str(error), "danger")
+
 
 # Sorting the prediction dictionary by probabilities
 def sort_prediction(pred_dict):
@@ -91,6 +88,7 @@ def sort_prediction(pred_dict):
         (k.capitalize(), v)
         for k, v in sorted(pred_dict.items(), key=lambda item: item[1], reverse=True)
     ]
+
 
 # Quotes
 with open("./application/static/quotes.json") as f:
@@ -123,18 +121,18 @@ def plot_history(history):
         }
 
         # emotions = [i.prediction[0][0] for i in sorted_history]
-        
+
         # # List of "Scores" for Items in History
         # scores = [emotion_score_map.get(i.lower(), 0) for i in emotions]
-        
+
         # # List of Datetimes which Predictions were taken
         # dates = [i.predicted_on for i in sorted_history]
-        
+
         # # Cumulative Sum of Scores (Net Emotional Indicator)
         # cumulative_score = np.cumsum(scores)
-        
+
         # List of Emotions for Items in History
-        sorted_history = sorted(history, key=lambda x : x.predicted_on)
+        sorted_history = sorted(history, key=lambda x: x.predicted_on)
 
         dates = [h.predicted_on for h in sorted_history]
         net = [emotion_score_map[h.prediction[0][0].lower()] for h in sorted_history]
@@ -143,19 +141,25 @@ def plot_history(history):
 
         try:
 
-            binned_dates = pd.to_datetime(np.linspace(pd.Timestamp(dates[0]).value, pd.Timestamp(dates[-1]).value, 17))
+            binned_dates = pd.to_datetime(
+                np.linspace(
+                    pd.Timestamp(dates[0]).value, pd.Timestamp(dates[-1]).value, 17
+                )
+            )
             net_emotion = []
 
             for idx, bd in enumerate(binned_dates[1:]):
-                net_emotion.append(df[(binned_dates[idx] < df.dates) & (df.dates <= bd)].net.sum())
+                net_emotion.append(
+                    df[(binned_dates[idx] < df.dates) & (df.dates <= bd)].net.sum()
+                )
 
-            colours = ['#55F855' if i > 0 else '#FF5858' for i in net_emotion]
+            colours = ["#55F855" if i > 0 else "#FF5858" for i in net_emotion]
             binned_dates = binned_dates[1:]
-        
+
         except:
 
             net_emotion, binned_dates, colours = [], [], []
-        
+
         # Plot Histogram
         for emotion in emotion_list:
             fig.add_trace(
@@ -172,7 +176,7 @@ def plot_history(history):
                     marker_color=emotion_color_map[emotion],
                 )
             )
-        
+
         # # Plot Lineplot of Net Emotional Indicator
         # fig.add_trace(
         #     go.Scatter(
@@ -185,69 +189,88 @@ def plot_history(history):
         #     ),
         # )
 
-        fig.add_trace(go.Bar(
-            name="Net Emotion",
-            y=net_emotion,
-            x=binned_dates,
-            marker_color=colours,
-            visible=False
-        ))
+        fig.add_trace(
+            go.Bar(
+                name="Net Emotion",
+                y=net_emotion,
+                x=binned_dates,
+                marker_color=colours,
+                visible=False,
+            )
+        )
 
         # Add an update menu to allow the selection of different plots
-        fig.update_layout(updatemenus=[dict(
-            type="buttons",
-            buttons=[
-            dict(
-                label="1",
-                method="update",
-                args=[
-                    # Make histograms visible and hide line plot
-                    dict(visible=[
-                        True,True,True,True,
-                        True,True,True,False
-                    ]),
-                    dict(
-                        barmode="stack",
-                        margin=dict(l=10, b=10, r=130, t=40)
-                    )
-                ],
-            ),
-            dict(
-                label="2",
-                method="update",
-                args=[
-                    dict(visible=[
-                        False,False,False,False,
-                        False,False,False,True
-                    ]),
-                    dict(
-                        hovermode="x",
-                        margin=dict(l=10, b=20, r=30, t=40)
-                    )
-                ],
-            )]
-        )])
+        fig.update_layout(
+            updatemenus=[
+                dict(
+                    type="buttons",
+                    buttons=[
+                        dict(
+                            label="1",
+                            method="update",
+                            args=[
+                                # Make histograms visible and hide line plot
+                                dict(
+                                    visible=[
+                                        True,
+                                        True,
+                                        True,
+                                        True,
+                                        True,
+                                        True,
+                                        True,
+                                        False,
+                                    ]
+                                ),
+                                dict(
+                                    barmode="stack",
+                                    margin=dict(l=10, b=10, r=130, t=40),
+                                ),
+                            ],
+                        ),
+                        dict(
+                            label="2",
+                            method="update",
+                            args=[
+                                dict(
+                                    visible=[
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        False,
+                                        True,
+                                    ]
+                                ),
+                                dict(
+                                    hovermode="x", margin=dict(l=10, b=20, r=30, t=40)
+                                ),
+                            ],
+                        ),
+                    ],
+                )
+            ]
+        )
 
         fig.update_layout(
             paper_bgcolor="white",
             plot_bgcolor="white",
             barmode="stack",
         )
-        
+
         fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor="#E5E5E5")
         fig.update_layout(margin=dict(l=10, b=10, r=130, t=40))
-        
+
         # Set location of plot selection menu
-        fig["layout"]["updatemenus"][0]["pad"] = dict(r=10, t=5) 
+        fig["layout"]["updatemenus"][0]["pad"] = dict(r=10, t=5)
 
         html_file_path = f"{getcwd()}/application/static/file.html"
 
         # Generate HTML for plot embedding
         plotly.offline.plot(
-            fig,
-            include_plotlyjs=False,
-            filename=html_file_path,
-            auto_open=False
+            fig, include_plotlyjs=False, filename=html_file_path, auto_open=False
         )
 
         plotly_txt = '<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>'
@@ -260,26 +283,25 @@ def plot_history(history):
 
     except Exception as e:
         print(e)
-    
-    return html_file_path
 
+    return html_file_path
 
 
 # ===== Error Handler ===== #
 
+
 @app.errorhandler(Exception)
 def error_handler(error):
-    
+
     if not hasattr(error, "name") or not hasattr(error, "code"):
         error = InternalServerError
         error.name = "Internal Server Error"
         error.code = 500
-    
+
     return (
         render_template("error.html", error=error, page="error", userInfo=current_user),
         error.code,
     )
-
 
 
 # ===== Routes ===== #
@@ -292,7 +314,7 @@ def demo():
     if not current_user.is_authenticated:
         flash("Unauthorized: You're not logged in!", "red")
         return redirect(url_for("login"))
-    
+
     # If there are enough histories, don't populate the database
     if db.session.query(Prediction).count() > 50:
         flash("Demo database already populated!", "info")
@@ -308,25 +330,27 @@ def demo():
 
     # Get a random image from the demo folder
     for idx in np.random.randint(7, size=100):
-        
+
         emotion = emotion_list[idx]
         upload_time = dt.now().strftime("%Y%m%d%H%M%S%f")
-        
+
         img_path = f"./application/static/demo/{emotion}.jpg"
-        img_name = f"demo_{current_user.username.strip().replace(' ', '_')}_{upload_time}.jpg"
+        img_name = (
+            f"demo_{current_user.username.strip().replace(' ', '_')}_{upload_time}.jpg"
+        )
         dest_path = f"./application/static/images/{img_name}"
 
         prediction_to_db = dict()
 
         for e in emotion_list:
             if e == emotion:
-                prediction_to_db[e] = np.random.uniform(0.7,0.95)
+                prediction_to_db[e] = np.random.uniform(0.7, 0.95)
             else:
                 prediction_to_db[e] = np.random.uniform(0.0, 0.4)
 
         try:
             shutil.copy(img_path, dest_path)
-            
+
             prediction = Prediction(
                 fk_user_id=int(current_user.id),
                 emotion=emotion,
@@ -341,9 +365,10 @@ def demo():
             print(e)
             flash("Error while copying files!", "red")
             return redirect(url_for("dashboard"))
-    
+
     flash("Demo images added successfully!", "green")
     return redirect(url_for("dashboard"))
+
 
 # Set cookie for auto capture
 @app.route("/set-cookie", methods=["GET"])
@@ -359,18 +384,17 @@ def change_cookie():
 @app.route("/", methods=["GET"])
 def homepage():
 
-    resp = make_response(render_template(
-        "index.html",
-        page="home",
-        userInfo=current_user,
-    ))
+    resp = make_response(
+        render_template(
+            "index.html",
+            page="home",
+            userInfo=current_user,
+        )
+    )
 
     if "autoCapture" in request.cookies:
-        resp.set_cookie(
-            "autoCapture",
-            request.cookies.get("autoCapture")
-        )
-    
+        resp.set_cookie("autoCapture", request.cookies.get("autoCapture"))
+
     else:
         resp.set_cookie("autoCapture", "ON")
 
@@ -411,12 +435,12 @@ def register():
                 add_to_db(user_db)
 
                 flash("Registered! Try to login!", "green")
-            
+
             else:
                 flash("Account already exist. Try to login!", "dark")
-            
+
             return redirect(url_for("login"))
-        
+
         else:
             flash("Register failed!", "red")
 
@@ -444,10 +468,10 @@ def login():
             if user and user.verify_password(password):
                 login_user(user)
                 return redirect(url_for("predict"))
-            
+
             else:
                 flash("Login invalid!", "red")
-        
+
         else:
             flash("Login failed!", "red")
 
@@ -457,12 +481,9 @@ def login():
             return redirect(url_for("predict"))
 
     # If user is not authenticated
-    resp = make_response(render_template(
-        "login.html", 
-        page="login", 
-        userInfo=current_user, 
-        form=form
-    ))
+    resp = make_response(
+        render_template("login.html", page="login", userInfo=current_user, form=form)
+    )
 
     resp.set_cookie("autoCapture", "ON")
 
@@ -609,10 +630,7 @@ def predict():
         history.prediction = sort_prediction(history.prediction)
 
         return render_template(
-            "result.html",
-            page="results",
-            userInfo=current_user,
-            history=history
+            "result.html", page="results", userInfo=current_user, history=history
         )
 
     return render_template(
@@ -693,14 +711,16 @@ def delete_history():
         else:
 
             # Remove image from the folder
-            try: os.remove(f"./application/static/images/{history.file_path}")
-            except: print("Image not found")
+            try:
+                os.remove(f"./application/static/images/{history.file_path}")
+            except:
+                print("Image not found")
 
             Prediction.query.filter_by(id=history_id).delete()
             db.session.commit()
 
             flash(f"Deleted history with id = {history_id}!", "green")
-    
+
     else:
         flash(f"No history with id = {history_id}!", "red")
 
@@ -884,14 +904,9 @@ def api_predict():
 
     for (x, y, w, h) in faces:
 
-        cv2.rectangle(
-            image,
-            (x-5, y-5),
-            (x+w+5, y+h+5),
-            (255, 59, 86), 2
-        )
-        
-        roi_gray = gray[y:y+h, x:x+w]
+        cv2.rectangle(image, (x - 5, y - 5), (x + w + 5, y + h + 5), (255, 59, 86), 2)
+
+        roi_gray = gray[y : y + h, x : x + w]
 
     # === Send image to TF model server ===>
 
@@ -949,7 +964,7 @@ def api_predict():
         "fk_user_id": history.fk_user_id,
         "emotion": history.emotion,
         "file_path": history.file_path,
-        "prediction": history.prediction
+        "prediction": history.prediction,
     }
 
     return jsonify(data)
@@ -976,6 +991,7 @@ def api_add_history():
 
     return jsonify({"id": hist_id})
 
+
 # API for getting history by id
 @app.route("/api/history/get/<int:history_id>", methods=["GET"])
 def api_get_history(history_id):
@@ -988,15 +1004,15 @@ def api_get_history(history_id):
         "fk_user_id": history.fk_user_id,
         "emotion": history.emotion,
         "file_path": history.file_path,
-        "prediction": history.prediction
+        "prediction": history.prediction,
     }
 
     return jsonify(data)
 
+
 # API for getting all history
 @app.route("/api/history/<int:user_id>", methods=["GET"])
 def api_get_all_history(user_id):
-
 
     page = int(request.args.get("page", 1))
     per_page = int(request.args.get("per_page", 9))
@@ -1024,15 +1040,18 @@ def api_get_all_history(user_id):
     histories = []
 
     for h in history.items:
-        histories.append({
-            "id": h.id,
-            "fk_user_id": h.fk_user_id,
-            "emotion": h.emotion,
-            "file_path": h.file_path,
-            "prediction": h.prediction
-        })
+        histories.append(
+            {
+                "id": h.id,
+                "fk_user_id": h.fk_user_id,
+                "emotion": h.emotion,
+                "file_path": h.file_path,
+                "prediction": h.prediction,
+            }
+        )
 
     return jsonify(histories)
+
 
 # API for deleting history
 @app.route("/api/history/delete/<int:history_id>", methods=["DELETE"])
