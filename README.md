@@ -2,7 +2,9 @@
 
 ### General To Do:
 
-* Code Clean Up
+* Find disgust and fearful face for prediction test
+* Mobile Friendly plotly graph
+* Unexpected and Consistency for History model and API
 
 ### Errors/Bugs
 
