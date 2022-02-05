@@ -2,15 +2,11 @@
 
 ### General To Do:
 
-* Find disgust and fearful face for prediction test
-* Mobile Friendly plotly graph
-* Unexpected and Consistency for History db model and API
+* Find disgust face for prediction test
+* Unexpected and Consistency for Prediction API and DB model
 
 ### Errors/Bugs
 
-* Camera with FaceAPI detection is slow
-* Camera cannot CORS (i.e. localhost to 127.0.0.1)
-* When loading the model, the buttons cannot be pressed
 * Camera does not work on Firefox due to incompatible APIs
 
 ### Edit in face-api.min.js
