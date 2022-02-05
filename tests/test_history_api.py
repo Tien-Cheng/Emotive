@@ -149,7 +149,7 @@ def allPossibleFilters():
 
     for l in fil_base:
         for f in fil_emotions:
-            fill_all.append((l+f)[:-1])
+            fill_all.append([(l+f)[:-1]])
     
     return fill_all
 
@@ -157,7 +157,7 @@ def allPossibleFilters():
 def test_getAllAPI_filters(client, filters, capsys):
     with capsys.disabled():
         response = client.get(
-            f'/api/history/{2}?' + filters,
+            f'/api/history/{2}?' + filters[0],
             content_type="application/json"
         )
 

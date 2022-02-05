@@ -792,7 +792,7 @@ def dashboard():
 def api_predict():
 
     upload_time = dt.now().strftime("%Y%m%d%H%M%S%f")
-    imgName = f"api_{upload_time}.png"
+    imgName = f"api_{upload_time}"
     imgPath = f"./application/static/images/{imgName}"
 
     # Using file upload
@@ -802,29 +802,22 @@ def api_predict():
         ext = f.filename.split(".")[-1]
 
         if f.filename == "":
-            return jsonify({"error": "No image uploaded"})
+            return jsonify({"error": "No file uploaded!"})
 
         # Handle non-standard images
-        if ext not in ["png"]:
-            return jsonify({"error": "Only PNG images are allowed"})
+        if ext not in ["png", "jpg"]:
+            return jsonify({"error": "Only PNG and JPG files are allowed!"})
 
-        f.save(imgPath)
-
-    # Using WebCam
-    elif request.data:
-
-        image_b64 = request.data.decode("utf-8")
-        response = urllib.request.urlopen(image_b64)
-
-        with open(imgPath, "wb") as f:
-            f.write(response.file.read())
+        imgNameExt = f"{imgName}.{ext}"
+        imgPathExt = f"{imgPath}.{ext}"
+        f.save(imgPathExt)
 
     else:
-        return jsonify({"error": "No image uploaded"})
+        return jsonify({"error": "No file uploaded!"})
 
     # === Crop the faces in the image ===>
 
-    image = cv2.imread(imgPath)
+    image = cv2.imread(imgPathExt)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     faceCascade = cv2.CascadeClassifier(
@@ -837,23 +830,25 @@ def api_predict():
 
     if len(faces) < 1:
 
-        os.remove(imgPath)  # Remove image from directory
-        return jsonify({"error": "No face detected"})
+        # Remove image from directory
+        os.remove(imgPathExt)
+        return jsonify({"error": "No face detected!"})
 
     elif len(faces) > 1:
 
-        os.remove(imgPath)
-        return jsonify({"error": "Multiple faces detected"})
+        os.remove(imgPathExt)
+        return jsonify({"error": "More than one face detected!"})
 
-    for idx, (x, y, w, h) in enumerate(faces):
-        cv2.rectangle(image, (x - 5, y - 5), (x + w + 5, y + h + 5), (255, 59, 86), 2)
-        roi_gray = gray[y : y + h, x : x + w]
+    for (x, y, w, h) in faces:
 
-        # Cropped black and white face
-        cv2.imwrite(
-            f"./application/static/images/faces/api_{upload_time}_{idx}_face.png",
-            roi_gray,
+        cv2.rectangle(
+            image,
+            (x-5, y-5),
+            (x+w+5, y+h+5),
+            (255, 59, 86), 2
         )
+        
+        roi_gray = gray[y:y+h, x:x+w]
 
     # === Send image to TF model server ===>
 
@@ -894,9 +889,9 @@ def api_predict():
     }
 
     prediction = Prediction(
-        fk_user_id=int(1),
+        fk_user_id=99,
         emotion=sort_prediction(prediction_to_db)[0][0].lower(),
-        file_path=str(imgName),
+        file_path=str(imgNameExt),
         prediction=prediction_to_db,
         predicted_on=dt.now(),
     )
@@ -906,7 +901,15 @@ def api_predict():
 
     history.prediction = sort_prediction(history.prediction)
 
-    return jsonify(history)
+    data = {
+        "id": history.id,
+        "fk_user_id": history.fk_user_id,
+        "emotion": history.emotion,
+        "file_path": history.file_path,
+        "prediction": history.prediction
+    }
+
+    return jsonify(data)
 
 
 # ===== APIs Predictions =====#
