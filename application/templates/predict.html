@@ -105,6 +105,7 @@
 </div>
 
 <script src="{{ url_for('static', filename='js/face-api.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/mobile-check.js') }}"></script>
 
 <script>
 "use strict";
@@ -135,17 +136,18 @@
     var startbutton = null;
 
     var loader = document.getElementById('loader');
+    var pageBody = document.getElementsByTagName('body')[0];
     loader.style.display = 'none';
 
     // Face API
     function startStream() {
-        Promise.all([
-            faceapi.loadTinyFaceDetectorModel('../static/models')
-        ]).then(() => {
+        if (!window.mobileCheck()) {
+            Promise.all([faceapi.loadTinyFaceDetectorModel('../static/models')])
+            .then(() => {initiateCamera();})
+            .catch(e => {console.log(e);});
+        } else {
             initiateCamera();
-        }).catch(e => {
-            console.log(e);
-        });
+        }
     }
 
     function initiateCamera() {
@@ -208,6 +210,7 @@
 
     function takepicture() {
         loader.style.display = 'block';
+        pageBody.style.overflowY = 'hidden';
         var context = canvas.getContext('2d');
         if (width && height) {
             canvas.width = width;
@@ -242,6 +245,7 @@
                 }, 2000);
             } else {
                 document.body.innerHTML = html;
+                pageBody.style.overflowY = 'scroll';
                 video.srcObject.getTracks().forEach(track => track.stop());
             }
         }).catch(err => console.log(err));
@@ -257,110 +261,116 @@
     
     video.addEventListener('play', () => {
         
-        // [Hacky] else it'll show error in faceapi.createCanvasFromMedia(video)
-        new Promise((res, rej) => {
-            setTimeout(() => { res() }, 100);
-        }).then(() => {
-            const canvas = faceapi.createCanvasFromMedia(video);
-            document.getElementById('videoWrap').append(canvas);
+        if (!window.mobileCheck()) {
             
-            const displaySize = { width: video.width, height: video.height }
-            faceapi.matchDimensions(canvas, displaySize);
-            
-            var no_detection_count = 0;
-            var prev_detection = null;
-            var detect_interval_ms = 125;
-            var perfect_lapse_ms = 0;
-            var picture_taken = false;
-            var lapse = false;
-            var auto_capture = '{{autoCapture}}';
-            
-            var face_border = document.getElementById('faceBorder');
-            var camInfoWrap = document.getElementById('camInfoWrap');
-            var camInfo = document.getElementById('camInfo');
-    
-            camInfo.innerHTML = 'Loading Model...';
-            
-            // 'lapse' indicate if countdown should continue
-            // 't' indicates the countdown time in seconds
-            function automatic_capture(lapse, t=3) {
+            // [Hacky] else it'll show error in faceapi.createCanvasFromMedia(video)
+            new Promise((res, rej) => {
+                setTimeout(() => { res() }, 100);
+            }).then(() => {
+                const canvas = faceapi.createCanvasFromMedia(video);
+                document.getElementById('videoWrap').append(canvas);
                 
-                if (!picture_taken && lapse && auto_capture == 'ON') {
-                    perfect_lapse_ms += detect_interval_ms;
+                const displaySize = { width: video.width, height: video.height }
+                faceapi.matchDimensions(canvas, displaySize);
+                
+                var no_detection_count = 0;
+                var prev_detection = null;
+                var detect_interval_ms = 125;
+                var perfect_lapse_ms = 0;
+                var picture_taken = false;
+                var lapse = false;
+                var auto_capture = '{{autoCapture}}';
+                
+                var face_border = document.getElementById('faceBorder');
+                var camInfoWrap = document.getElementById('camInfoWrap');
+                var camInfo = document.getElementById('camInfo');
+        
+                camInfo.innerHTML = 'Loading Model...';
+                
+                // 'lapse' indicate if countdown should continue
+                // 't' indicates the countdown time in seconds
+                function automatic_capture(lapse, t=3) {
                     
-                    for (let i=1; i<=t; i++) {
-                        perfect_lapse_ms <= (-i+t+1)*1000
-                            ? camInfo.innerHTML = `Predicting in ${i}`
-                            : '';
-                    }
-                    
-                    if (perfect_lapse_ms >= t*1000) {
-                        takepicture();
-                        picture_taken = true;
+                    if (!picture_taken && lapse && auto_capture == 'ON') {
+                        perfect_lapse_ms += detect_interval_ms;
+                        
+                        for (let i=1; i<=t; i++) {
+                            perfect_lapse_ms <= (-i+t+1)*1000
+                                ? camInfo.innerHTML = `Predicting in ${i}`
+                                : '';
+                        }
+                        
+                        if (perfect_lapse_ms >= t*1000) {
+                            takepicture();
+                            picture_taken = true;
+                            perfect_lapse_ms = 0;
+                        }
+                    } else if (!lapse) {
                         perfect_lapse_ms = 0;
                     }
-                } else if (!lapse) {
-                    perfect_lapse_ms = 0;
                 }
-            }
-    
-            // Detect for every interval
-            setInterval(async () => {
-            
-                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions());
-                
-                let resizedDetections = faceapi.resizeResults(detections, displaySize);
-    
-                // Prevent detector from turning on and off
-                if (resizedDetections.length == 0 && prev_detection != null) {
-                    no_detection_count += 1;
-                    no_detection_count <= 10 ? resizedDetections = prev_detection : '';
-                } else if (resizedDetections.length >= 1) {
-                    no_detection_count = 0;
-                    prev_detection = resizedDetections;
-                }
-    
-                canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-                faceapi.draw.drawDetections(canvas, resizedDetections);
-                
-                // Check if the center of the detection box is within a threshold of the center box
-                if (typeof resizedDetections[0] != 'undefined') {
-                    const dtc = resizedDetections[0]._box;
-                    let dc_x, dc_y;
         
-                    dc_x = (dtc._width / 2) + dtc._x;
-                    dc_y = (dtc._height / 2) + dtc._y;
+                // Detect for every interval
+                setInterval(async () => {
+                
+                    const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions());
                     
-                    let distance = ((400 - dc_x) ** 2 + (300 - dc_y) ** 2) ** 0.5;
+                    let resizedDetections = faceapi.resizeResults(detections, displaySize);
         
-                    if (distance < 100) {
-                        face_border.style.borderColor = '#00B358';
-                        face_border.classList.remove("blinking");
-                        face_border.classList.remove("blinking-fast");
-                        camInfoWrap.style.backgroundColor = '#00B358';
-                        camInfo.innerHTML = 'Perfect';
-                        automatic_capture(lapse=true);
+                    // Prevent detector from turning on and off
+                    if (resizedDetections.length == 0 && prev_detection != null) {
+                        no_detection_count += 1;
+                        no_detection_count <= 10 ? resizedDetections = prev_detection : '';
+                    } else if (resizedDetections.length >= 1) {
+                        no_detection_count = 0;
+                        prev_detection = resizedDetections;
+                    }
+        
+                    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+                    faceapi.draw.drawDetections(canvas, resizedDetections);
+                    
+                    // Check if the center of the detection box is within a threshold of the center box
+                    if (typeof resizedDetections[0] != 'undefined') {
+                        const dtc = resizedDetections[0]._box;
+                        let dc_x, dc_y;
+            
+                        dc_x = (dtc._width / 2) + dtc._x;
+                        dc_y = (dtc._height / 2) + dtc._y;
+                        
+                        let distance = ((400 - dc_x) ** 2 + (300 - dc_y) ** 2) ** 0.5;
+            
+                        if (distance < 100) {
+                            face_border.style.borderColor = '#00B358';
+                            face_border.classList.remove("blinking");
+                            face_border.classList.remove("blinking-fast");
+                            camInfoWrap.style.backgroundColor = '#00B358';
+                            camInfo.innerHTML = 'Perfect';
+                            automatic_capture(lapse=true);
+                        } else {
+                            face_border.style.borderColor = '#FF9200';
+                            face_border.classList.add("blinking");
+                            face_border.classList.remove("blinking-fast");
+                            camInfoWrap.style.backgroundColor = '#FF9200';
+                            camInfo.innerHTML = 'Move to the Box';
+                            automatic_capture(lapse=false);
+                        }
+                        
                     } else {
-                        face_border.style.borderColor = '#FF9200';
-                        face_border.classList.add("blinking");
-                        face_border.classList.remove("blinking-fast");
-                        camInfoWrap.style.backgroundColor = '#FF9200';
-                        camInfo.innerHTML = 'Move to the Box';
+                        face_border.style.borderColor = '#FF0000';
+                        face_border.classList.remove("blinking");
+                        face_border.classList.add("blinking-fast");
+                        camInfoWrap.style.backgroundColor = '#FF0000';
+                        camInfo.innerHTML = 'No face detected';
                         automatic_capture(lapse=false);
                     }
-                    
-                } else {
-                    face_border.style.borderColor = '#FF0000';
-                    face_border.classList.remove("blinking");
-                    face_border.classList.add("blinking-fast");
-                    camInfoWrap.style.backgroundColor = '#FF0000';
-                    camInfo.innerHTML = 'No face detected';
-                    automatic_capture(lapse=false);
-                }
-    
-            }, detect_interval_ms);
-        });
-    
+        
+                }, detect_interval_ms);
+            });
+        } else {
+            camInfo.innerHTML = 'Mobile | Auto Capture Disabled';
+            var face_border = document.getElementById('faceBorder');
+            face_border.style.display = "none";
+        }
     }, false);
 })();
 
