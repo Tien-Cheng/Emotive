@@ -1,6 +1,7 @@
 argon2-cffi==21.3.0
 argon2-cffi-bindings==21.2.0
 asttokens==2.0.5
+async-generator==1.10
 attrs==21.4.0
 backcall==0.2.0
 black==21.12b0
@@ -9,6 +10,7 @@ certifi==2021.10.8
 cffi==1.15.0
 charset-normalizer==2.0.10
 click==8.0.3
+cryptography==36.0.1
 debugpy==1.5.1
 decorator==5.1.1
 defusedxml==0.7.1
@@ -24,6 +26,7 @@ flask-talisman==0.8.1
 Flask-WTF==1.0.0
 greenlet==1.1.2
 gunicorn==20.1.0
+h11==0.13.0
 idna==3.3
 importlib-resources==5.4.0
 iniconfig==1.1.1
@@ -54,6 +57,7 @@ nest-asyncio==1.5.4
 notebook==6.4.7
 numpy==1.22.1
 opencv-contrib-python-headless==4.5.5.62
+outcome==1.1.0
 packaging==21.3
 pandocfilters==1.5.0
 parso==0.8.3
@@ -73,6 +77,7 @@ pycodestyle==2.8.0
 pycparser==2.21
 pyflakes==2.4.0
 Pygments==2.11.2
+pyOpenSSL==22.0.0
 pyparsing==3.0.6
 pyrsistent==0.18.1
 pytest==6.2.5
@@ -81,8 +86,11 @@ pyzmq==22.3.0
 qtconsole==5.2.2
 QtPy==2.0.0
 requests==2.27.1
+selenium==4.1.0
 Send2Trash==1.8.0
 six==1.16.0
+sniffio==1.2.0
+sortedcontainers==2.4.0
 SQLAlchemy==1.4.30
 stack-data==0.1.4
 tenacity==8.0.1
@@ -92,11 +100,14 @@ toml==0.10.2
 tomli==1.2.3
 tornado==6.1
 traitlets==5.1.1
+trio==0.19.0
+trio-websocket==0.9.2
 typing_extensions==4.0.1
 urllib3==1.26.8
 wcwidth==0.2.5
 webencodings==0.5.1
 Werkzeug==2.0.2
 widgetsnbextension==3.5.2
+wsproto==1.0.0
 WTForms==3.0.1
 zipp==3.7.0
