@@ -67,7 +67,7 @@
                 <div class="dropdown text-end">
                     <button class="btn bg-purple text-white dropdown-toggle" type="button" id="history-sort-toggle"
                         data-bs-toggle="dropdown" aria-expanded="false">
-                        Sort by <span class="fw-bold">{{col_sort}}</span>
+                        Sort by <span class="fw-bold">{{col_sort | replace("_", " ") | title}}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="history-sort-toggle">
                         {% for column in history.query.statement.selected_columns.keys()|sort %}
