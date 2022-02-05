@@ -143,7 +143,7 @@ def plot_history(history):
                 go.Histogram(
                     name=emotion.capitalize(),
                     x=[
-                        i.predicted_on
+                        i.predicted_on.date()
                         for i in history
                         if i.prediction[0][0].lower() == emotion
                     ],
