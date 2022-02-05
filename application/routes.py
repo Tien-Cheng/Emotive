@@ -121,13 +121,14 @@ def plot_history(history):
         }
 
         # List of Emotions for Items in History
-        emotions = [i.prediction[0][0] for i in history]
+        sorted_history = sorted(history, key=lambda x : x.predicted_on)
+        emotions = [i.prediction[0][0] for i in sorted_history]
         
         # # List of "Scores" for Items in History
         scores = [emotion_score_map.get(i.lower(), 0) for i in emotions]
         
         # List of Datetimes which Predictions were taken
-        dates = [i.predicted_on for i in history]
+        dates = [i.predicted_on for i in sorted_history]
         
         # Cumulative Sum of Scores (Net Emotional Indicator)
         cumulative_score = np.cumsum(scores)
