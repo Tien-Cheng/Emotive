@@ -5,13 +5,15 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.edge.options import Options
+opts = Options()
+opts.headless = True
+testing = webdriver.Edge(opts=opts)
 
-testing = webdriver.Edge()
-testing.
 
 
 @pytest.mark.usefixtures("populate_users")
 def test_browser(browser, capsys):
+
     URL = "http://127.0.0.1:5000/"
     browser.delete_all_cookies()
     browser.get(
