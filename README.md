@@ -4,7 +4,7 @@
 
 * Find disgust and fearful face for prediction test
 * Mobile Friendly plotly graph
-* Unexpected and Consistency for History model and API
+* Unexpected and Consistency for History db model and API
 
 ### Errors/Bugs
 

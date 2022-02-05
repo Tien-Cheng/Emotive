@@ -4,17 +4,18 @@
 <!-- The block content replace the one encapsulated in  layout.html -->
 {% block content %}
 
-<h1 class="text-center mt-3">
-  <span class="fw-bold text-purple">{{ error.code }}</span>: {{ error.name }}
+<h1 class="text-center mt-3 mb-2">
+    <span class="fw-bold text-purple">{{ error.code }}</span>: {{ error.name }}
 </h1>
-<h4 class="text-center">
-  Looks like something went wrong! {{ error.description }}
+
+<h4 class="text-center mx-auto mt-4 mb-5" style="max-width: 600px;">
+    Looks like something went wrong! {{ error.description }}
 </h4>
 
-<div class="error-btn mx-auto mt-5">
-  <a href="/">
-    <button class="btn bg-purple text-white w-100">Go Back Home</button>
-  </a>
+<div class="error-btn mx-auto">
+    <a href="/">
+        <button class="btn bg-purple text-white w-100">Go Back Home</button>
+    </a>
 </div>
 
 {% endblock %}
