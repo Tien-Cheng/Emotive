@@ -418,7 +418,7 @@ def register():
             if not user:
 
                 # Only the developers can register
-                # Example of valid pass: "doaafaqihtc-myPassWord"
+                # Example of valid pass: "devfqtc-myPassWord"
                 # "myPassWord" will be the password of user
                 if password.split('-')[0] != "devfqtc":
                     flash("Registration is disabled!", "red")
