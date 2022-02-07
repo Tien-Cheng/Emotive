@@ -307,7 +307,7 @@ def error_handler(error):
 # ===== Routes ===== #
 
 # Populate the database with images for demonstration purposes
-@app.route("/demo", methods=["GET"])
+@app.route("/demo/populate", methods=["GET"])
 def demo():
 
     # Unauthenticated user will be redirected to login
@@ -368,6 +368,34 @@ def demo():
 
     flash("Demo images added successfully!", "green")
     return redirect(url_for("dashboard"))
+
+
+# Remove histories no images in the directory
+# This is because newly added images are remove in heroku after inactivity
+@app.route("/demo/remove-images", methods=["GET"])
+def demo_remove_images():
+
+    # Unauthenticated user will be redirected to login
+    if not current_user.is_authenticated:
+        flash("Unauthorized: You're not logged in!", "red")
+        return redirect(url_for("login"))
+
+    histories = db.session.query(Prediction).all()
+
+    try:
+    
+        for history in histories:
+            if not os.path.isfile(f"./application/static/images/{history.file_path}"):
+                db.session.query(Prediction).filter_by(id=history.id).delete()
+                db.session.commit()
+                print(f">>> Removed history with {history.file_path}")
+    
+        flash("Histories with missing images removed!", "green")
+        return redirect(url_for("dashboard"))
+    
+    except:
+        flash("Error while removing images!", "red")
+        return redirect(url_for("dashboard"))
 
 
 # Set cookie for auto capture
@@ -686,6 +714,10 @@ def history():
     for i, p in enumerate(history.items):
         history.items[i].prediction = sort_prediction(p.prediction)
 
+        # Check if image file exists
+        if not os.path.isfile(f"./application/static/images/{p.file_path}"):
+            history.items[i].file_path = "default.png"
+
     return render_template(
         "history.html",
         page="history",
@@ -754,8 +786,13 @@ def results(history_id):
         if history.fk_user_id != current_user.id:
             flash("Unauthorized: You're not the predictor!", "red")
             return redirect(url_for("history"))
+        
         else:
             history.prediction = sort_prediction(history.prediction)
+
+            # Check if image file exists
+            if not os.path.isfile(f"./application/static/images/{history.file_path}"):
+                history.file_path = "default.png"
 
             return render_template(
                 "result.html", page="results", userInfo=current_user, history=history
@@ -820,15 +857,13 @@ def dashboard():
 
         try:
             data_usage_mb += (
-                os.path.getsize(
-                    f"{getcwd()}/application/static/images/{history[i].file_path}"
-                )
-                / 1e6
-            )
+                os.path.getsize(f"./application/static/images/{history[i].file_path}") / 1e6)
         except FileNotFoundError:
-            print(
-                f"{getcwd()}/application/static/images/{history[i].file_path} not found"
-            )
+            print(f"{history[i].file_path} not found")
+
+        # Check if image file exists
+        if not os.path.isfile(f"./application/static/images/{p.file_path}"):
+            history[i].file_path = "default.png"
 
         if est_face[emotion] == None:
             est_face[emotion] = history[i]
