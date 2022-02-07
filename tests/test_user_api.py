@@ -21,7 +21,7 @@ def test_user_add_api(client, userlist, capsys):
 
         # Send post request to API
         response = client.post(
-            "/api/user-add", data=json.dumps(data), content_type="application/json"
+            "/api/user/add", data=json.dumps(data), content_type="application/json"
         )
 
 
@@ -46,7 +46,7 @@ def test_user_get_api(client, userlist, capsys):
     with capsys.disabled():
         # Send post request to API
         response = client.get(
-            f"/api/user-get/{userlist}", content_type="application/json"
+            f"/api/user/{userlist}", content_type="application/json"
         )
 
         response_body = json.loads(response.get_data(as_text=True))
@@ -67,7 +67,7 @@ def test_user_get_api(client, userlist, capsys):
 def test_user_get_all_api(client, capsys):
     with capsys.disabled():
         # Send post request to API
-        response = client.get("/api/get-users", content_type="application/json")
+        response = client.get("/api/user/all", content_type="application/json")
         response_body = json.loads(response.get_data(as_text=True))
 
         # Check response status code
@@ -92,7 +92,7 @@ def test_user_delete_api(client, userlist, capsys):
     with capsys.disabled():
         # Send post request to API
         response = client.delete(
-            f"/api/user-delete/{userlist}", content_type="application/json"
+            f"/api/user/delete/{userlist}", content_type="application/json"
         )
         response_body = json.loads(response.get_data(as_text=True))
 

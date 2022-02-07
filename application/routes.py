@@ -1118,7 +1118,7 @@ def api_delete_history(history_id):
 # ===== APIs Users ===== #
 
 # API: add users
-@app.route("/api/user-add", methods=["POST"])
+@app.route("/api/user/add", methods=["POST"])
 def api_user_add():
 
     # Retrieve the json file posted from client
@@ -1138,7 +1138,7 @@ def api_user_add():
 
 
 # API get users
-@app.route("/api/user-get/<id>", methods=["GET"])
+@app.route("/api/user/<id>", methods=["GET"])
 def api_user_get(id):
 
     # Retrieve the user using id from client
@@ -1157,7 +1157,7 @@ def api_user_get(id):
 
 
 # API get all users
-@app.route("/api/get-users", methods=["GET"])
+@app.route("/api/user/all", methods=["GET"])
 def get_all_users():
 
     all_users = []
@@ -1175,7 +1175,7 @@ def get_all_users():
 
 
 # API delete users
-@app.route("/api/user-delete/<id>", methods=["DELETE"])
+@app.route("/api/user/delete/<id>", methods=["DELETE"])
 def api_user_delete(id):
     User.query.filter_by(id=id).delete()
     return jsonify({"result": "ok"})
