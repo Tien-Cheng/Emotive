@@ -1,24 +1,26 @@
 import sys
+import os
 from time import sleep
 
 import pytest
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.edge.options import Options
-opts = Options()
-opts.headless = True
-testing = webdriver.Edge(opts=opts)
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
+# opts = Options()
+# opts.headless = True
+# testing = webdriver.Edge(opts=opts)
 
-@pytest.mark.usefixtures("populate_users")
-def test_browser(browser, capsys):
 
+def test_browser(client, chrome, capsys):
+    browser = chrome
     URL = "http://127.0.0.1:5000/"
     browser.delete_all_cookies()
-    browser.get(
-        URL
-    )
+    browser.get(URL)
     browser.maximize_window()
     assert browser.title == "Emotive"
     # SKIP: Do not need to check if can register as registration function will be disabled
@@ -40,4 +42,3 @@ def test_browser(browser, capsys):
     sleep(5)
 
     assert browser.current_url == "http://127.0.0.1:5000/predict"
-
