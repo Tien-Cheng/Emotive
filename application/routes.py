@@ -420,7 +420,7 @@ def register():
                 # Only the developers can register
                 # Example of valid pass: "doaafaqihtc-myPassWord"
                 # "myPassWord" will be the password of user
-                if password.split('-')[0] != "doaafaqihtc":
+                if password.split('-')[0] != "devfqtc":
                     flash("Registration is disabled!", "red")
                     return redirect(url_for("register"))
                 else:
