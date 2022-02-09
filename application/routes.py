@@ -626,9 +626,16 @@ def predict():
         # === Send image to TF model server ===>
 
         # Waiting for AI model to output an array of 7 probability scores
-        data_instance = np.asarray(Image.fromarray(roi_gray).resize((48, 48)))
-        # From shape of (48,48) to (1,48,48,1)
-        data_instance = np.expand_dims(np.expand_dims(data_instance, axis=2), axis=0)
+        ori_face = np.asarray(Image.fromarray(roi_gray).resize((48, 48)))
+
+        # From shape (48,48) to (48,48,3)
+        data_instance = np.zeros((48,48,3))
+        data_instance[:,:,0] = ori_face
+        data_instance[:,:,1] = ori_face
+        data_instance[:,:,2] = ori_face
+
+        # From shape of (48,48,3) to (1,48,48,3)
+        data_instance = np.expand_dims(data_instance, axis=0)
 
         json_response = requests.post(
             "https://doaa-ca2-emotive-model.herokuapp.com/v1/models/img_classifier:predict",
@@ -968,9 +975,16 @@ def api_predict():
     # === Send image to TF model server ===>
 
     # Waiting for AI model to output an array of 7 probability scores
-    data_instance = np.asarray(Image.fromarray(roi_gray).resize((48, 48)))
-    # From shape of (48,48) to (1,48,48,1)
-    data_instance = np.expand_dims(np.expand_dims(data_instance, axis=2), axis=0)
+    ori_face = np.asarray(Image.fromarray(roi_gray).resize((48, 48)))
+
+    # From shape (48,48) to (48,48,3)
+    data_instance = np.zeros((48,48,3))
+    data_instance[:,:,0] = ori_face
+    data_instance[:,:,1] = ori_face
+    data_instance[:,:,2] = ori_face
+
+    # From shape of (48,48,3) to (1,48,48,3)
+    data_instance = np.expand_dims(data_instance, axis=0)
 
     json_response = requests.post(
         "https://doaa-ca2-emotive-model.herokuapp.com/v1/models/img_classifier:predict",
