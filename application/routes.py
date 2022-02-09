@@ -905,9 +905,11 @@ def dashboard():
 # API for prediction
 @app.route("/api/predict", methods=["POST"])
 def api_predict():
-    if not current_user.is_authenticated:
-        raise API_Error("Not Logged In", 401)
-    user_id = current_user.id
+    # if "LOGIN_DISABLED" in app.config and app.config["LOGIN_DISABLED"]:
+    #     pass
+    # elif not current_user.is_authenticated:
+    #     raise API_Error("Not Logged In", 401)
+    # user_id = current_user.id
     upload_time = dt.now().strftime("%Y%m%d%H%M%S%f")
     imgName = f"api_{upload_time}"
     imgPath = f"./application/static/images/{imgName}"
@@ -923,6 +925,7 @@ def api_predict():
 
         # Handle non-standard images
         if ext not in ["png", "jpg"]:
+            print(f"Ext: {{ ext }}")
             raise API_Error("Only PNG and JPG files are allowed!")
 
         imgNameExt = f"{imgName}.{ext}"
@@ -1003,7 +1006,7 @@ def api_predict():
     }
 
     prediction = Prediction(
-        fk_user_id=user_id,
+        fk_user_id=99,
         emotion=sort_prediction(prediction_to_db)[0][0].lower(),
         file_path=str(imgNameExt),
         prediction=prediction_to_db,
