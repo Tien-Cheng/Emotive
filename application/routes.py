@@ -1206,6 +1206,12 @@ def api_user_login():
         login_user(user)
         return jsonify({"Result": "Logged In!"})
 
+# API: Logout
+@app.route("/api/user/logout", methods=["POST"])
+def api_user_logout():
+    logout_user()
+    return jsonify({"Result": "Logged Out!"})
+
 
 # API: add users
 @app.route("/api/user/add", methods=["POST"])
