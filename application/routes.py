@@ -288,7 +288,11 @@ def plot_history(history):
 
 
 # ===== Error Handler ===== #
-
+class API_Error(Exception):
+    def __init__(self, message, status_code=400):
+        super().__init__()
+        self.message = message
+        self.status_code = status_code
 
 @app.errorhandler(Exception)
 def error_handler(error):
@@ -1116,6 +1120,31 @@ def api_delete_history(history_id):
 
 
 # ===== APIs Users ===== #
+
+# API: Login
+@app.route("/api/user/login", methods=["POST"])
+def api_user_login():
+    # Retrieve login data
+    data = request.get_json()
+    if data is None:
+        raise TypeError(
+            "Invalid request type. Ensure data is in the form of a json file."
+        )
+
+    username = data["username"]
+    password = data["password"]
+
+    # Check if user exists
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        raise API_Error("User not found", 404)
+    elif not user.verify_password(password):
+        raise API_Error("Invalid password", 403)
+    else:
+        login_user(user)
+        return jsonify({"Result": "Logged In!"})
+
 
 # API: add users
 @app.route("/api/user/add", methods=["POST"])
