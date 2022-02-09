@@ -307,6 +307,10 @@ def error_handler(error):
         error.code,
     )
 
+@app.errorhandler(API_Error)
+def api_error_handler(error):
+    return jsonify({"message": error.message}), error.status_code
+
 
 # ===== Routes ===== #
 
@@ -901,7 +905,9 @@ def dashboard():
 # API for prediction
 @app.route("/api/predict", methods=["POST"])
 def api_predict():
-
+    if not current_user.is_authenticated:
+        raise API_Error("Not Logged In", 401)
+    user_id = current_user.id
     upload_time = dt.now().strftime("%Y%m%d%H%M%S%f")
     imgName = f"api_{upload_time}"
     imgPath = f"./application/static/images/{imgName}"
@@ -913,18 +919,18 @@ def api_predict():
         ext = f.filename.split(".")[-1]
 
         if f.filename == "":
-            return jsonify({"error": "No file uploaded!"})
+            raise API_Error("No file provided")
 
         # Handle non-standard images
         if ext not in ["png", "jpg"]:
-            return jsonify({"error": "Only PNG and JPG files are allowed!"})
+            raise API_Error("Only PNG and JPG files are allowed!")
 
         imgNameExt = f"{imgName}.{ext}"
         imgPathExt = f"{imgPath}.{ext}"
         f.save(imgPathExt)
 
     else:
-        return jsonify({"error": "No file uploaded!"})
+        raise API_Error("No file uploaded!")
 
     # === Crop the faces in the image ===>
 
@@ -943,12 +949,12 @@ def api_predict():
 
         # Remove image from directory
         os.remove(imgPathExt)
-        return jsonify({"error": "No face detected!"})
+        raise API_Error("No face detected!")
 
     elif len(faces) > 1:
 
         os.remove(imgPathExt)
-        return jsonify({"error": "More than one face detected!"})
+        raise API_Error("Multiple faces detected!")
 
     for (x, y, w, h) in faces:
 
@@ -973,8 +979,10 @@ def api_predict():
         ),
         headers={"content-type": "application/json"},
     )
-
-    predictions = json.loads(json_response.text)["predictions"]
+    try:
+        predictions = json.loads(json_response.text)["predictions"]
+    except:
+        raise API_Error("Model unable to predict image", 500)
 
     # === Save image metadata to database ===>
 
@@ -995,7 +1003,7 @@ def api_predict():
     }
 
     prediction = Prediction(
-        fk_user_id=99,
+        fk_user_id=user_id,
         emotion=sort_prediction(prediction_to_db)[0][0].lower(),
         file_path=str(imgNameExt),
         prediction=prediction_to_db,
