@@ -13,8 +13,17 @@ import pandas as pd
 import plotly
 import plotly.graph_objects as go
 import requests
-from flask import (abort, flash, json, jsonify, make_response, redirect,
-                   render_template, request, url_for)
+from flask import (
+    abort,
+    flash,
+    json,
+    jsonify,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from flask_login import current_user, login_user, logout_user
 from PIL import Image
 from plotly.subplots import make_subplots
@@ -294,6 +303,7 @@ class API_Error(Exception):
         self.message = message
         self.status_code = status_code
 
+
 @app.errorhandler(Exception)
 def error_handler(error):
 
@@ -306,6 +316,7 @@ def error_handler(error):
         render_template("error.html", error=error, page="error", userInfo=current_user),
         error.code,
     )
+
 
 @app.errorhandler(API_Error)
 def api_error_handler(error):
@@ -391,16 +402,16 @@ def demo_remove_images():
     histories = db.session.query(Prediction).all()
 
     try:
-    
+
         for history in histories:
             if not os.path.isfile(f"./application/static/images/{history.file_path}"):
                 db.session.query(Prediction).filter_by(id=history.id).delete()
                 db.session.commit()
                 print(f">>> Removed history with {history.file_path}")
-    
+
         flash("Histories with missing images removed!", "green")
         return redirect(url_for("dashboard"))
-    
+
     except:
         flash("Error while removing images!", "red")
         return redirect(url_for("dashboard"))
@@ -456,11 +467,11 @@ def register():
                 # Only the developers can register
                 # Example of valid pass: "devfqtc-myPassWord"
                 # "myPassWord" will be the password of user
-                if password.split('-')[0] != "devfqtc":
+                if password.split("-")[0] != "devfqtc":
                     flash("Registration is disabled!", "red")
                     return redirect(url_for("register"))
                 else:
-                    password = "-".join(password.split('-')[1:])
+                    password = "-".join(password.split("-")[1:])
 
                 try:
                     user_db = User(
@@ -629,10 +640,10 @@ def predict():
         ori_face = np.asarray(Image.fromarray(roi_gray).resize((48, 48)))
 
         # From shape (48,48) to (48,48,3)
-        data_instance = np.zeros((48,48,3))
-        data_instance[:,:,0] = ori_face
-        data_instance[:,:,1] = ori_face
-        data_instance[:,:,2] = ori_face
+        data_instance = np.zeros((48, 48, 3))
+        data_instance[:, :, 0] = ori_face
+        data_instance[:, :, 1] = ori_face
+        data_instance[:, :, 2] = ori_face
 
         # From shape of (48,48,3) to (1,48,48,3)
         data_instance = np.expand_dims(data_instance, axis=0)
@@ -801,7 +812,7 @@ def results(history_id):
         if history.fk_user_id != current_user.id:
             flash("Unauthorized: You're not the predictor!", "red")
             return redirect(url_for("history"))
-        
+
         else:
             history.prediction = sort_prediction(history.prediction)
 
@@ -872,7 +883,9 @@ def dashboard():
 
         try:
             data_usage_mb += (
-                os.path.getsize(f"./application/static/images/{history[i].file_path}") / 1e6)
+                os.path.getsize(f"./application/static/images/{history[i].file_path}")
+                / 1e6
+            )
         except FileNotFoundError:
             print(f"{history[i].file_path} not found")
 
@@ -933,7 +946,7 @@ def api_predict():
 
         # Handle non-standard images
         if ext not in ["png", "jpg"]:
-            print(f"Ext: {{ ext }}")
+            print(f"Ext: {ext}")
             raise API_Error("Only PNG and JPG files are allowed!")
 
         imgNameExt = f"{imgName}.{ext}"
@@ -979,10 +992,10 @@ def api_predict():
     ori_face = np.asarray(Image.fromarray(roi_gray).resize((48, 48)))
 
     # From shape (48,48) to (48,48,3)
-    data_instance = np.zeros((48,48,3))
-    data_instance[:,:,0] = ori_face
-    data_instance[:,:,1] = ori_face
-    data_instance[:,:,2] = ori_face
+    data_instance = np.zeros((48, 48, 3))
+    data_instance[:, :, 0] = ori_face
+    data_instance[:, :, 1] = ori_face
+    data_instance[:, :, 2] = ori_face
 
     # From shape of (48,48,3) to (1,48,48,3)
     data_instance = np.expand_dims(data_instance, axis=0)
@@ -1069,9 +1082,16 @@ def api_add_history():
 # API for getting history by id
 @app.route("/api/history/get/<int:history_id>", methods=["GET"])
 def api_get_history(history_id):
-
-    # Get the history from the database
     history = Prediction.query.filter_by(id=history_id).first()
+    if "LOGIN_DISABLED" in app.config and app.config["LOGIN_DISABLED"]:
+        user_id = history.fk_user_id
+    elif not current_user.is_authenticated:
+        raise API_Error("Not Logged In", 401)
+    else:
+        user_id = current_user.id
+    # Get the history from the database
+    if user_id != history.fk_user_id:
+        raise API_Error("Not logged in as correct user", 403)
 
     data = {
         "id": history.id,
@@ -1087,7 +1107,13 @@ def api_get_history(history_id):
 # API for getting all history
 @app.route("/api/history/<int:user_id>", methods=["GET"])
 def api_get_all_history(user_id):
-
+    if "LOGIN_DISABLED" in app.config and app.config["LOGIN_DISABLED"]:
+        pass
+    elif not current_user.is_authenticated:
+        raise API_Error("Not Logged In", 401)
+    else:
+        if user_id != current_user.id:
+            raise API_Error("Not logged in as correct user", 403)
     page = int(request.args.get("page", 1))
     per_page = int(request.args.get("per_page", 9))
     col_sort = request.args.get("col_sort", "predicted_on")
@@ -1132,6 +1158,15 @@ def api_get_all_history(user_id):
 def api_delete_history(history_id):
 
     history = Prediction.query.filter_by(id=history_id).first()
+    if "LOGIN_DISABLED" in app.config and app.config["LOGIN_DISABLED"]:
+        user_id = history.fk_user_id
+    elif not current_user.is_authenticated:
+        raise API_Error("Not Logged In", 401)
+    else:
+        user_id = current_user.id
+    # Get the history from the database
+    if user_id != history.fk_user_id:
+        raise API_Error("Not logged in as correct user", 403)
 
     # Check if history exist
     if history:
@@ -1178,7 +1213,8 @@ def api_user_add():
 
     # Retrieve the json file posted from client
     data = request.get_json()
-
+    if "LOGIN_DISABLED" not in app.config and not app.config["LOGIN_DISABLED"]:
+        raise API_Error("Add User is disabled for now", 403)
     # Create a user object store all data for db action
     user_id = add_to_db(
         User(
@@ -1195,7 +1231,13 @@ def api_user_add():
 # API get users
 @app.route("/api/user/<id>", methods=["GET"])
 def api_user_get(id):
-
+    if "LOGIN_DISABLED" in app.config and app.config["LOGIN_DISABLED"]:
+        pass
+    elif not current_user.is_authenticated:
+        raise API_Error("Not Logged In", 401)
+    else:
+        if id != current_user.id:
+            raise API_Error("Not logged in as correct user", 403)
     # Retrieve the user using id from client
     user = User.query.filter_by(id=id).first()
 
@@ -1214,7 +1256,10 @@ def api_user_get(id):
 # API get all users
 @app.route("/api/user/all", methods=["GET"])
 def get_all_users():
-
+    if "LOGIN_DISABLED" not in app.config and not app.config["LOGIN_DISABLED"]:
+        raise API_Error(
+            "Get all users is only available for testing at the moment", 403
+        )
     all_users = []
 
     for e in User.query.all():
@@ -1232,5 +1277,12 @@ def get_all_users():
 # API delete users
 @app.route("/api/user/delete/<id>", methods=["DELETE"])
 def api_user_delete(id):
+    if "LOGIN_DISABLED" in app.config and app.config["LOGIN_DISABLED"]:
+        pass
+    elif not current_user.is_authenticated:
+        raise API_Error("Not Logged In", 401)
+    else:
+        if id != current_user.id:
+            raise API_Error("Not logged in as correct user", 403)
     User.query.filter_by(id=id).delete()
     return jsonify({"result": "ok"})
