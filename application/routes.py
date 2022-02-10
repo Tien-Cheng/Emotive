@@ -129,17 +129,6 @@ def plot_history(history):
             "disgusted": -0.5,
         }
 
-        # emotions = [i.prediction[0][0] for i in sorted_history]
-
-        # # List of "Scores" for Items in History
-        # scores = [emotion_score_map.get(i.lower(), 0) for i in emotions]
-
-        # # List of Datetimes which Predictions were taken
-        # dates = [i.predicted_on for i in sorted_history]
-
-        # # Cumulative Sum of Scores (Net Emotional Indicator)
-        # cumulative_score = np.cumsum(scores)
-
         # List of Emotions for Items in History
         sorted_history = sorted(history, key=lambda x: x.predicted_on)
 
@@ -185,18 +174,6 @@ def plot_history(history):
                     marker_color=emotion_color_map[emotion],
                 )
             )
-
-        # # Plot Lineplot of Net Emotional Indicator
-        # fig.add_trace(
-        #     go.Scatter(
-        #         name="Net Emotional Indicator",
-        #         mode="lines+markers",
-        #         x=dates,
-        #         y=cumulative_score,
-        #         text=emotions,
-        #         visible=False,  # [default] show histogram
-        #     ),
-        # )
 
         fig.add_trace(
             go.Bar(
@@ -1087,6 +1064,8 @@ def api_add_history():
 @app.route("/api/history/get/<int:history_id>", methods=["GET"])
 def api_get_history(history_id):
     history = Prediction.query.filter_by(id=history_id).first()
+    if history is None:
+        raise API_Error("Entry not found", 404)
     if "LOGIN_DISABLED" in app.config and app.config["LOGIN_DISABLED"]:
         user_id = history.fk_user_id
     elif not current_user.is_authenticated:
