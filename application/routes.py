@@ -602,18 +602,20 @@ def predict():
             return redirect(url_for("predict"))
 
         # === Crop the faces in the image ===>
+        try:
+            image = cv2.imread(imgPathExt)
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-        image = cv2.imread(imgPathExt)
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            faceCascade = cv2.CascadeClassifier(
+                cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+            )
 
-        faceCascade = cv2.CascadeClassifier(
-            cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-        )
-
-        faces = faceCascade.detectMultiScale(
-            gray, scaleFactor=1.3, minNeighbors=3, minSize=(30, 30)
-        )
-
+            faces = faceCascade.detectMultiScale(
+                gray, scaleFactor=1.3, minNeighbors=3, minSize=(30, 30)
+            )
+        except:
+            flash("Unable to process the image. The image may be corrupted!", "red")
+            return redirect(url_for("predict"))
         if len(faces) < 1:
 
             # Remove image from directory
@@ -957,17 +959,19 @@ def api_predict():
         raise API_Error("No file uploaded!")
 
     # === Crop the faces in the image ===>
+    try:
+        image = cv2.imread(imgPathExt)
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    image = cv2.imread(imgPathExt)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        faceCascade = cv2.CascadeClassifier(
+            cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+        )
 
-    faceCascade = cv2.CascadeClassifier(
-        cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-    )
-
-    faces = faceCascade.detectMultiScale(
-        gray, scaleFactor=1.3, minNeighbors=3, minSize=(30, 30)
-    )
+        faces = faceCascade.detectMultiScale(
+            gray, scaleFactor=1.3, minNeighbors=3, minSize=(30, 30)
+        )
+    except:
+        raise API_Error("Unable to process image, image may be corrupted!")
 
     if len(faces) < 1:
 
@@ -1205,6 +1209,7 @@ def api_user_login():
     else:
         login_user(user)
         return jsonify({"Result": "Logged In!"})
+
 
 # API: Logout
 @app.route("/api/user/logout", methods=["POST"])
