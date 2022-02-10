@@ -28,8 +28,6 @@ def test_predictAPI(client, emotionImg, capsys):
         os.remove(f"./application/static/images/{response_body['file_path']}")
         assert "error" not in response_body.keys()
 
-        # TEMPORARY
-        print(response_body["prediction"][:2])
         
         # Hacky way to check if prediction is correct
         if emotionImg.split(".")[0] in ["disgusted", "fearful"]:
