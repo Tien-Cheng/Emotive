@@ -2,6 +2,7 @@
 Test how app handles unexpected errors via the error handler
 """
 import pytest
+from io import BytesIO
 
 
 @pytest.mark.parametrize(
@@ -20,3 +21,20 @@ def test_route_codes(client, endpoint, capsys):
         endpoint, code = endpoint[0], endpoint[1]
         response = client.get(f"/{endpoint}")
         assert response.status_code == code
+
+
+@pytest.mark.parametrize("imgname", ["corrupted_img.png"])
+def test_corrupted_img(client, imgname, capsys):
+    with capsys.disabled():
+        data = {
+            "file": (
+                BytesIO(open(f"./tests/test_files/{imgname}", "rb").read()),
+                imgname,
+            )
+        }
+
+        response = client.post(
+            "/api/predict", data=data, content_type="multipart/form-data"
+        )
+
+        assert response.status_code == 400
