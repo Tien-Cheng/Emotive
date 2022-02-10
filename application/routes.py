@@ -13,8 +13,17 @@ import pandas as pd
 import plotly
 import plotly.graph_objects as go
 import requests
-from flask import (abort, flash, json, jsonify, make_response, redirect,
-                   render_template, request, url_for)
+from flask import (
+    abort,
+    flash,
+    json,
+    jsonify,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from flask_login import current_user, login_user, logout_user
 from PIL import Image
 from plotly.subplots import make_subplots
@@ -288,6 +297,11 @@ def plot_history(history):
 
 
 # ===== Error Handler ===== #
+class API_Error(Exception):
+    def __init__(self, message, status_code=400):
+        super().__init__()
+        self.message = message
+        self.status_code = status_code
 
 
 @app.errorhandler(Exception)
@@ -302,6 +316,11 @@ def error_handler(error):
         render_template("error.html", error=error, page="error", userInfo=current_user),
         error.code,
     )
+
+
+@app.errorhandler(API_Error)
+def api_error_handler(error):
+    return jsonify({"message": error.message}), error.status_code
 
 
 # ===== Routes ===== #
@@ -383,16 +402,16 @@ def demo_remove_images():
     histories = db.session.query(Prediction).all()
 
     try:
-    
+
         for history in histories:
             if not os.path.isfile(f"./application/static/images/{history.file_path}"):
                 db.session.query(Prediction).filter_by(id=history.id).delete()
                 db.session.commit()
                 print(f">>> Removed history with {history.file_path}")
-    
+
         flash("Histories with missing images removed!", "green")
         return redirect(url_for("dashboard"))
-    
+
     except:
         flash("Error while removing images!", "red")
         return redirect(url_for("dashboard"))
@@ -448,11 +467,11 @@ def register():
                 # Only the developers can register
                 # Example of valid pass: "devfqtc-myPassWord"
                 # "myPassWord" will be the password of user
-                if password.split('-')[0] != "devfqtc":
+                if password.split("-")[0] != "devfqtc":
                     flash("Registration is disabled!", "red")
                     return redirect(url_for("register"))
                 else:
-                    password = "-".join(password.split('-')[1:])
+                    password = "-".join(password.split("-")[1:])
 
                 try:
                     user_db = User(
@@ -621,10 +640,10 @@ def predict():
         ori_face = np.asarray(Image.fromarray(roi_gray).resize((48, 48)))
 
         # From shape (48,48) to (48,48,3)
-        data_instance = np.zeros((48,48,3))
-        data_instance[:,:,0] = ori_face
-        data_instance[:,:,1] = ori_face
-        data_instance[:,:,2] = ori_face
+        data_instance = np.zeros((48, 48, 3))
+        data_instance[:, :, 0] = ori_face
+        data_instance[:, :, 1] = ori_face
+        data_instance[:, :, 2] = ori_face
 
         # From shape of (48,48,3) to (1,48,48,3)
         data_instance = np.expand_dims(data_instance, axis=0)
@@ -793,7 +812,7 @@ def results(history_id):
         if history.fk_user_id != current_user.id:
             flash("Unauthorized: You're not the predictor!", "red")
             return redirect(url_for("history"))
-        
+
         else:
             history.prediction = sort_prediction(history.prediction)
 
@@ -864,7 +883,9 @@ def dashboard():
 
         try:
             data_usage_mb += (
-                os.path.getsize(f"./application/static/images/{history[i].file_path}") / 1e6)
+                os.path.getsize(f"./application/static/images/{history[i].file_path}")
+                / 1e6
+            )
         except FileNotFoundError:
             print(f"{history[i].file_path} not found")
 
@@ -904,7 +925,12 @@ def dashboard():
 # API for prediction
 @app.route("/api/predict", methods=["POST"])
 def api_predict():
-
+    if "LOGIN_DISABLED" in app.config and app.config["LOGIN_DISABLED"]:
+        user_id = 99
+    elif not current_user.is_authenticated:
+        raise API_Error("Not Logged In", 401)
+    else:
+        user_id = current_user.id
     upload_time = dt.now().strftime("%Y%m%d%H%M%S%f")
     imgName = f"api_{upload_time}"
     imgPath = f"./application/static/images/{imgName}"
@@ -916,18 +942,19 @@ def api_predict():
         ext = f.filename.split(".")[-1]
 
         if f.filename == "":
-            return jsonify({"error": "No file uploaded!"})
+            raise API_Error("No file provided")
 
         # Handle non-standard images
         if ext not in ["png", "jpg"]:
-            return jsonify({"error": "Only PNG and JPG files are allowed!"})
+            print(f"Ext: {ext}")
+            raise API_Error("Only PNG and JPG files are allowed!")
 
         imgNameExt = f"{imgName}.{ext}"
         imgPathExt = f"{imgPath}.{ext}"
         f.save(imgPathExt)
 
     else:
-        return jsonify({"error": "No file uploaded!"})
+        raise API_Error("No file uploaded!")
 
     # === Crop the faces in the image ===>
 
@@ -946,12 +973,12 @@ def api_predict():
 
         # Remove image from directory
         os.remove(imgPathExt)
-        return jsonify({"error": "No face detected!"})
+        raise API_Error("No face detected!")
 
     elif len(faces) > 1:
 
         os.remove(imgPathExt)
-        return jsonify({"error": "More than one face detected!"})
+        raise API_Error("Multiple faces detected!")
 
     for (x, y, w, h) in faces:
 
@@ -965,10 +992,10 @@ def api_predict():
     ori_face = np.asarray(Image.fromarray(roi_gray).resize((48, 48)))
 
     # From shape (48,48) to (48,48,3)
-    data_instance = np.zeros((48,48,3))
-    data_instance[:,:,0] = ori_face
-    data_instance[:,:,1] = ori_face
-    data_instance[:,:,2] = ori_face
+    data_instance = np.zeros((48, 48, 3))
+    data_instance[:, :, 0] = ori_face
+    data_instance[:, :, 1] = ori_face
+    data_instance[:, :, 2] = ori_face
 
     # From shape of (48,48,3) to (1,48,48,3)
     data_instance = np.expand_dims(data_instance, axis=0)
@@ -983,8 +1010,10 @@ def api_predict():
         ),
         headers={"content-type": "application/json"},
     )
-
-    predictions = json.loads(json_response.text)["predictions"]
+    try:
+        predictions = json.loads(json_response.text)["predictions"]
+    except:
+        raise API_Error("Model unable to predict image", 500)
 
     # === Save image metadata to database ===>
 
@@ -1005,7 +1034,7 @@ def api_predict():
     }
 
     prediction = Prediction(
-        fk_user_id=99,
+        fk_user_id=user_id,
         emotion=sort_prediction(prediction_to_db)[0][0].lower(),
         file_path=str(imgNameExt),
         prediction=prediction_to_db,
@@ -1053,9 +1082,16 @@ def api_add_history():
 # API for getting history by id
 @app.route("/api/history/get/<int:history_id>", methods=["GET"])
 def api_get_history(history_id):
-
-    # Get the history from the database
     history = Prediction.query.filter_by(id=history_id).first()
+    if "LOGIN_DISABLED" in app.config and app.config["LOGIN_DISABLED"]:
+        user_id = history.fk_user_id
+    elif not current_user.is_authenticated:
+        raise API_Error("Not Logged In", 401)
+    else:
+        user_id = current_user.id
+    # Get the history from the database
+    if user_id != history.fk_user_id:
+        raise API_Error("Not logged in as correct user", 403)
 
     data = {
         "id": history.id,
@@ -1071,7 +1107,13 @@ def api_get_history(history_id):
 # API for getting all history
 @app.route("/api/history/<int:user_id>", methods=["GET"])
 def api_get_all_history(user_id):
-
+    if "LOGIN_DISABLED" in app.config and app.config["LOGIN_DISABLED"]:
+        pass
+    elif not current_user.is_authenticated:
+        raise API_Error("Not Logged In", 401)
+    else:
+        if user_id != current_user.id:
+            raise API_Error("Not logged in as correct user", 403)
     page = int(request.args.get("page", 1))
     per_page = int(request.args.get("per_page", 9))
     col_sort = request.args.get("col_sort", "predicted_on")
@@ -1116,6 +1158,15 @@ def api_get_all_history(user_id):
 def api_delete_history(history_id):
 
     history = Prediction.query.filter_by(id=history_id).first()
+    if "LOGIN_DISABLED" in app.config and app.config["LOGIN_DISABLED"]:
+        user_id = history.fk_user_id
+    elif not current_user.is_authenticated:
+        raise API_Error("Not Logged In", 401)
+    else:
+        user_id = current_user.id
+    # Get the history from the database
+    if user_id != history.fk_user_id:
+        raise API_Error("Not logged in as correct user", 403)
 
     # Check if history exist
     if history:
@@ -1131,13 +1182,45 @@ def api_delete_history(history_id):
 
 # ===== APIs Users ===== #
 
+# API: Login
+@app.route("/api/user/login", methods=["POST"])
+def api_user_login():
+    # Retrieve login data
+    data = request.get_json()
+    if data is None:
+        raise TypeError(
+            "Invalid request type. Ensure data is in the form of a json file."
+        )
+
+    username = data["username"]
+    password = data["password"]
+
+    # Check if user exists
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        raise API_Error("User not found", 404)
+    elif not user.verify_password(password):
+        raise API_Error("Invalid password", 403)
+    else:
+        login_user(user)
+        return jsonify({"Result": "Logged In!"})
+
+# API: Logout
+@app.route("/api/user/logout", methods=["POST"])
+def api_user_logout():
+    logout_user()
+    return jsonify({"Result": "Logged Out!"})
+
+
 # API: add users
 @app.route("/api/user/add", methods=["POST"])
 def api_user_add():
 
     # Retrieve the json file posted from client
     data = request.get_json()
-
+    if "LOGIN_DISABLED" not in app.config and not app.config["LOGIN_DISABLED"]:
+        raise API_Error("Add User is disabled for now", 403)
     # Create a user object store all data for db action
     user_id = add_to_db(
         User(
@@ -1154,7 +1237,13 @@ def api_user_add():
 # API get users
 @app.route("/api/user/<id>", methods=["GET"])
 def api_user_get(id):
-
+    if "LOGIN_DISABLED" in app.config and app.config["LOGIN_DISABLED"]:
+        pass
+    elif not current_user.is_authenticated:
+        raise API_Error("Not Logged In", 401)
+    else:
+        if id != current_user.id:
+            raise API_Error("Not logged in as correct user", 403)
     # Retrieve the user using id from client
     user = User.query.filter_by(id=id).first()
 
@@ -1173,7 +1262,10 @@ def api_user_get(id):
 # API get all users
 @app.route("/api/user/all", methods=["GET"])
 def get_all_users():
-
+    if "LOGIN_DISABLED" not in app.config and not app.config["LOGIN_DISABLED"]:
+        raise API_Error(
+            "Get all users is only available for testing at the moment", 403
+        )
     all_users = []
 
     for e in User.query.all():
@@ -1191,5 +1283,12 @@ def get_all_users():
 # API delete users
 @app.route("/api/user/delete/<id>", methods=["DELETE"])
 def api_user_delete(id):
+    if "LOGIN_DISABLED" in app.config and app.config["LOGIN_DISABLED"]:
+        pass
+    elif not current_user.is_authenticated:
+        raise API_Error("Not Logged In", 401)
+    else:
+        if id != current_user.id:
+            raise API_Error("Not logged in as correct user", 403)
     User.query.filter_by(id=id).delete()
     return jsonify({"result": "ok"})
