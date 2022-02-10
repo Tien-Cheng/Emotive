@@ -1208,7 +1208,7 @@ def api_user_login():
         raise API_Error("Invalid password", 403)
     else:
         login_user(user)
-        return jsonify({"Result": "Logged In!"})
+        return jsonify({"Result": "Logged In!", "id" : user.id })
 
 
 # API: Logout
