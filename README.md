@@ -1,15 +1,4 @@
 # CA2-2B01-Emotive-Web
+This repository contains the main code for the Emotive web application. Emotive is an emotion tracker that relies on deep learning to classify facial emotions.
 
-### General To Do:
-
-* Find disgust face for prediction test
-* Unexpected and Consistency for Prediction API and DB model
-
-### Errors/Bugs
-
-* Camera does not work on Firefox due to incompatible APIs
-
-### Edit in face-api.min.js
-
-1. Change rectangular border colour to theme purple
-2. Remove confidence score due to mirroring bug: From `new sv(n,{label:r})` to `new sv(n,{label:""})`
+Note that registration is disabled by default. You can access the registration page, but it will not let you create an account without a secret password.
