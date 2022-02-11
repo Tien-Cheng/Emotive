@@ -241,7 +241,8 @@
                 document.body.innerHTML = html;
                 // [Hacky] else face detection does not work
                 setTimeout(() => {
-                    window.location.reload();
+                    // window.location.reload();
+                    window.location.replace('{{ url_for("predict") }}');
                 }, 2000);
             } else {
                 document.body.innerHTML = html;
