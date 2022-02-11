@@ -547,7 +547,7 @@ def predict():
                 return redirect(url_for("predict"))
 
             # Handle non-standard images
-            if ext not in ["png", "jpg"]:
+            if ext not in ["png", "jpg", "jpeg"]:
                 flash("Upload only png or jpg!", "red")
                 return redirect(url_for("predict"))
 
@@ -567,8 +567,13 @@ def predict():
 
         else:
             flash("You did not use WebCam or File Upload!", "red")
-            return redirect(url_for("predict"))
-
+            #return redirect(url_for("predict"))
+            return render_template(
+                "predict.html",
+                page="predict",
+                userInfo=current_user,
+                autoCapture=request.cookies.get("autoCapture"),
+            )
         # === Crop the faces in the image ===>
         try:
             image = cv2.imread(imgPathExt)
@@ -583,20 +588,35 @@ def predict():
             )
         except:
             flash("Unable to process the image. The image may be corrupted!", "red")
-            return redirect(url_for("predict"))
+            return render_template(
+                "predict.html",
+                page="predict",
+                userInfo=current_user,
+                autoCapture=request.cookies.get("autoCapture"),
+            )
         if len(faces) < 1:
 
             # Remove image from directory
             os.remove(imgPathExt)
             flash("No face detected!", "red")
-            return redirect(url_for("predict"))
-
+            #return redirect(url_for("predict"))
+            return render_template(
+                "predict.html",
+                page="predict",
+                userInfo=current_user,
+                autoCapture=request.cookies.get("autoCapture"),
+            )
         elif len(faces) > 1:
 
             os.remove(imgPathExt)
             flash("Multiple faces detected!", "red")
-            return redirect(url_for("predict"))
-
+            #return redirect(url_for("predict"))
+            return render_template(
+            "predict.html",
+            page="predict",
+            userInfo=current_user,
+            autoCapture=request.cookies.get("autoCapture"),
+            )
         for (x, y, w, h) in faces:
 
             cv2.rectangle(
@@ -635,7 +655,13 @@ def predict():
                 "Model Failed To Predict. A likely reason is that the model is facing high demand at the moment.",
                 "red",
             )
-            return redirect(url_for("predict"))
+            # return redirect(url_for("predict"))
+            return render_template(
+                "predict.html",
+                page="predict",
+                userInfo=current_user,
+                autoCapture=request.cookies.get("autoCapture"),
+            )
         # === Save image metadata to database ===>
 
         prediction_to_db = {
