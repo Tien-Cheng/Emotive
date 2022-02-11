@@ -3,6 +3,7 @@ import json
 import os
 from io import BytesIO
 import numpy as np
+import time
 
 emotion_list = ("angry", "fearful", "surprised", "happy", "neutral", "sad", "disgusted")
 
@@ -10,6 +11,8 @@ emotion_list = ("angry", "fearful", "surprised", "happy", "neutral", "sad", "dis
 @pytest.mark.parametrize("emotionImg", [f"{e}.{ext}" for e in emotion_list for ext in ['png', 'jpg']])
 def test_predAPI(client, emotionImg, capsys):
     with capsys.disabled():
+
+        # time.sleep(3)
 
         data = {
             "file": (BytesIO(open(f'./tests/test_files/{emotionImg}', 'rb').read()), emotionImg)
@@ -71,6 +74,8 @@ def test_predAPI_Consistency(client, emotionImg, capsys):
         responses = []
 
         for _ in range(2):
+
+            # time.sleep(3)
 
             data = {
                 "file": (BytesIO(open(f'./tests/test_files/{emotionImg}', 'rb').read()), emotionImg)

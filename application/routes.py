@@ -626,7 +626,7 @@ def predict():
 
         # From shape of (48,48,3) to (1,48,48,3)
         data_instance = np.expand_dims(data_instance, axis=0)
-
+        
         json_response = requests.post(
             "https://doaa-ca2-emotive-model.herokuapp.com/v1/models/img_classifier:predict",
             data=json.dumps(
@@ -904,6 +904,7 @@ def dashboard():
 # API for prediction
 @app.route("/api/predict", methods=["POST"])
 def api_predict():
+    
     if "LOGIN_DISABLED" in app.config and app.config["LOGIN_DISABLED"]:
         user_id = 99
     elif not current_user.is_authenticated:
@@ -913,7 +914,7 @@ def api_predict():
     upload_time = dt.now().strftime("%Y%m%d%H%M%S%f")
     imgName = f"api_{upload_time}"
     imgPath = f"./application/static/images/{imgName}"
-
+    
     # Using file upload
     if "file" in request.files.keys():
 
@@ -925,7 +926,6 @@ def api_predict():
 
         # Handle non-standard images
         if ext not in ["png", "jpg"]:
-            print(f"Ext: {ext}")
             raise API_Error("Only PNG and JPG files are allowed!")
 
         imgNameExt = f"{imgName}.{ext}"
@@ -934,7 +934,7 @@ def api_predict():
 
     else:
         raise API_Error("No file uploaded!")
-
+    
     # === Crop the faces in the image ===>
     try:
         image = cv2.imread(imgPathExt)
@@ -949,7 +949,7 @@ def api_predict():
         )
     except:
         raise API_Error("Unable to process image, image may be corrupted!")
-
+    
     if len(faces) < 1:
 
         # Remove image from directory
@@ -966,7 +966,7 @@ def api_predict():
         cv2.rectangle(image, (x - 5, y - 5), (x + w + 5, y + h + 5), (255, 59, 86), 2)
 
         roi_gray = gray[y : y + h, x : x + w]
-
+    
     # === Send image to TF model server ===>
 
     # Waiting for AI model to output an array of 7 probability scores
@@ -980,22 +980,29 @@ def api_predict():
 
     # From shape of (48,48,3) to (1,48,48,3)
     data_instance = np.expand_dims(data_instance, axis=0)
-
-    json_response = requests.post(
-        "https://doaa-ca2-emotive-model.herokuapp.com/v1/models/img_classifier:predict",
-        data=json.dumps(
-            {
-                "signature_name": "serving_default",
-                "instances": data_instance.tolist(),
-            }
-        ),
-        headers={"content-type": "application/json"},
-    )
+    print(1)
     try:
+        print(1.1)
+        json_response = requests.post(
+            "https://doaa-ca2-emotive-model.herokuapp.com/v1/models/img_classifier:predict",
+            data=json.dumps(
+                {
+                    "signature_name": "serving_default",
+                    "instances": data_instance.tolist(),
+                }
+            ),
+            headers={"content-type": "application/json"},
+        )
+        print(1.2)
+        print(json_response.text)
         predictions = json.loads(json_response.text)["predictions"]
-    except:
-        raise API_Error("Model unable to predict image", 500)
-
+        print(1.3)
+    except Exception as e:
+        print(1.4)
+        print(e)
+        raise API_Error("Model unable to predict image", 999)
+    
+    print(2)
     # === Save image metadata to database ===>
 
     prediction_to_db = {
@@ -1013,7 +1020,7 @@ def api_predict():
             predictions[0],
         )
     }
-
+    print(3)
     prediction = Prediction(
         fk_user_id=user_id,
         emotion=sort_prediction(prediction_to_db)[0][0].lower(),
@@ -1021,12 +1028,12 @@ def api_predict():
         prediction=prediction_to_db,
         predicted_on=dt.now(),
     )
-
+    print(4)
     pred_id = add_to_db(prediction)
     history = Prediction.query.filter_by(id=pred_id).first()
-
+    print(5)
     history.prediction = sort_prediction(history.prediction)
-
+    print(6)
     data = {
         "id": history.id,
         "fk_user_id": history.fk_user_id,
@@ -1034,7 +1041,7 @@ def api_predict():
         "file_path": history.file_path,
         "prediction": history.prediction,
     }
-
+    print(7)
     return jsonify(data)
 
 
