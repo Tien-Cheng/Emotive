@@ -626,20 +626,22 @@ def predict():
 
         # From shape of (48,48,3) to (1,48,48,3)
         data_instance = np.expand_dims(data_instance, axis=0)
-        
-        json_response = requests.post(
-            "https://doaa-ca2-emotive-model.herokuapp.com/v1/models/img_classifier:predict",
-            data=json.dumps(
-                {
-                    "signature_name": "serving_default",
-                    "instances": data_instance.tolist(),
-                }
-            ),
-            headers={"content-type": "application/json"},
-        )
+        try:
+            json_response = requests.post(
+                "https://doaa-ca2-emotive-model.herokuapp.com/v1/models/img_classifier:predict",
+                data=json.dumps(
+                    {
+                        "signature_name": "serving_default",
+                        "instances": data_instance.tolist(),
+                    }
+                ),
+                headers={"content-type": "application/json"},
+            )
 
-        predictions = json.loads(json_response.text)["predictions"]
-
+            predictions = json.loads(json_response.text)["predictions"]
+        except:
+            flash("Model Failed To Predict. A likely reason is that the model is facing high demand at the moment.", "red")
+            return redirect(url_for("predict"))
         # === Save image metadata to database ===>
 
         prediction_to_db = {
