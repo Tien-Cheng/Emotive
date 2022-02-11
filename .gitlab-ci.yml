@@ -1,14 +1,14 @@
 stages:
-    - test
+    # - test
     - build
-test:
-    image: python:3.8-slim
-    stage: test
-    script:
-        - apt-get update -qy
-        - pip install -r requirements.txt
-        - export TESTING=config_test.cfg
-        - python -m pytest -vs
+# test:
+#     image: python:3.8-slim
+#     stage: test
+#     script:
+#         - apt-get update -qy
+#         - pip install -r requirements.txt
+#         - export TESTING=config_test.cfg
+#         - python -m pytest -vs
 docker-build:
   # Use the official docker image.
   only:
