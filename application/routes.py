@@ -997,7 +997,6 @@ def api_predict():
     except Exception as e:
         raise API_Error("Model unable to predict image. It is likely that the model is facing high demand at the moment and thus cannot process your request.", 500)
     
-    print(2)
     # === Save image metadata to database ===>
 
     prediction_to_db = {
@@ -1015,7 +1014,7 @@ def api_predict():
             predictions[0],
         )
     }
-    print(3)
+
     prediction = Prediction(
         fk_user_id=user_id,
         emotion=sort_prediction(prediction_to_db)[0][0].lower(),
@@ -1023,12 +1022,12 @@ def api_predict():
         prediction=prediction_to_db,
         predicted_on=dt.now(),
     )
-    print(4)
+
     pred_id = add_to_db(prediction)
     history = Prediction.query.filter_by(id=pred_id).first()
-    print(5)
+
     history.prediction = sort_prediction(history.prediction)
-    print(6)
+
     data = {
         "id": history.id,
         "fk_user_id": history.fk_user_id,
@@ -1036,7 +1035,7 @@ def api_predict():
         "file_path": history.file_path,
         "prediction": history.prediction,
     }
-    print(7)
+
     return jsonify(data)
 
 

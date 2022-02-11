@@ -12,7 +12,7 @@ emotion_list = ("angry", "fearful", "surprised", "happy", "neutral", "sad", "dis
 def test_predAPI(client, emotionImg, capsys):
     with capsys.disabled():
 
-        # time.sleep(3)
+        time.sleep(3)
 
         data = {
             "file": (BytesIO(open(f'./tests/test_files/{emotionImg}', 'rb').read()), emotionImg)
@@ -75,7 +75,7 @@ def test_predAPI_Consistency(client, emotionImg, capsys):
 
         for _ in range(2):
 
-            # time.sleep(3)
+            time.sleep(3)
 
             data = {
                 "file": (BytesIO(open(f'./tests/test_files/{emotionImg}', 'rb').read()), emotionImg)
