@@ -1,9 +1,9 @@
 from datetime import datetime as dt
-from application.models import User
 
 import pytest
 from app import app as flask_app
 from application import db
+from application.models import User
 
 
 @pytest.fixture

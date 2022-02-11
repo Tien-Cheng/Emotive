@@ -14,9 +14,7 @@ app = Flask(__name__)
 CORS(app)
 
 Talisman(
-    app,
-    content_security_policy_report_only=True,
-    content_security_policy_report_uri=""
+    app, content_security_policy_report_only=True, content_security_policy_report_uri=""
 )
 
 if "TESTING" in os.environ:

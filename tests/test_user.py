@@ -2,7 +2,6 @@ from datetime import datetime as dt
 
 import pytest
 from application.models import User
-from werkzeug.security import generate_password_hash
 
 
 @pytest.mark.parametrize(
@@ -10,7 +9,7 @@ from werkzeug.security import generate_password_hash
     [["tan", "Password1234!@#$"], ["lee", "fadd$$@!45FF"]],
 )
 def test_UserClass(userlist, capsys):
-    with capsys.disabled():  # TODO: Consider also testing created date
+    with capsys.disabled():
         created = dt.utcnow()
         new_user = User(
             username=userlist[0],
@@ -38,7 +37,7 @@ def test_UserClassValidation_missing(userlist, capsys):
     test_UserClass(userlist, capsys)
 
 
-@pytest.mark.xfail(reason="Invalid inputs", strict=True) # Out of Range Inputs
+@pytest.mark.xfail(reason="Invalid inputs", strict=True)  # Out of Range Inputs
 @pytest.mark.parametrize(
     "userlist",
     [["yeet111", "password"], ["", "empty username"], ["empty password", ""], ["", ""]],

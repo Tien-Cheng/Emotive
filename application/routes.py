@@ -13,17 +13,8 @@ import pandas as pd
 import plotly
 import plotly.graph_objects as go
 import requests
-from flask import (
-    abort,
-    flash,
-    json,
-    jsonify,
-    make_response,
-    redirect,
-    render_template,
-    request,
-    url_for,
-)
+from flask import (abort, flash, json, jsonify, make_response, redirect,
+                   render_template, request, url_for)
 from flask_login import current_user, login_user, logout_user
 from PIL import Image
 from plotly.subplots import make_subplots
@@ -640,7 +631,10 @@ def predict():
 
             predictions = json.loads(json_response.text)["predictions"]
         except:
-            flash("Model Failed To Predict. A likely reason is that the model is facing high demand at the moment.", "red")
+            flash(
+                "Model Failed To Predict. A likely reason is that the model is facing high demand at the moment.",
+                "red",
+            )
             return redirect(url_for("predict"))
         # === Save image metadata to database ===>
 
@@ -906,7 +900,7 @@ def dashboard():
 # API for prediction
 @app.route("/api/predict", methods=["POST"])
 def api_predict():
-    
+
     if "LOGIN_DISABLED" in app.config and app.config["LOGIN_DISABLED"]:
         user_id = 99
     elif not current_user.is_authenticated:
@@ -916,7 +910,7 @@ def api_predict():
     upload_time = dt.now().strftime("%Y%m%d%H%M%S%f")
     imgName = f"api_{upload_time}"
     imgPath = f"./application/static/images/{imgName}"
-    
+
     # Using file upload
     if "file" in request.files.keys():
 
@@ -936,7 +930,7 @@ def api_predict():
 
     else:
         raise API_Error("No file uploaded!")
-    
+
     # === Crop the faces in the image ===>
     try:
         image = cv2.imread(imgPathExt)
@@ -951,7 +945,7 @@ def api_predict():
         )
     except:
         raise API_Error("Unable to process image, image may be corrupted!")
-    
+
     if len(faces) < 1:
 
         # Remove image from directory
@@ -968,7 +962,7 @@ def api_predict():
         cv2.rectangle(image, (x - 5, y - 5), (x + w + 5, y + h + 5), (255, 59, 86), 2)
 
         roi_gray = gray[y : y + h, x : x + w]
-    
+
     # === Send image to TF model server ===>
 
     # Waiting for AI model to output an array of 7 probability scores
@@ -996,8 +990,11 @@ def api_predict():
         predictions = json.loads(json_response.text)["predictions"]
     except Exception as e:
         print(e)
-        raise API_Error("Model unable to predict image. It is likely that the model is facing high demand at the moment and thus cannot process your request.", 500)
-    
+        raise API_Error(
+            "Model unable to predict image. It is likely that the model is facing high demand at the moment and thus cannot process your request.",
+            500,
+        )
+
     # === Save image metadata to database ===>
 
     prediction_to_db = {
@@ -1189,7 +1186,7 @@ def api_user_login():
         raise API_Error("Invalid password", 403)
     else:
         login_user(user)
-        return jsonify({"Result": "Logged In!", "id" : user.id })
+        return jsonify({"Result": "Logged In!", "id": user.id})
 
 
 # API: Logout

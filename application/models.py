@@ -159,5 +159,5 @@ class User(db.Model, UserMixin):
         if type(created_on) is not dt:
             raise AssertionError(
                 "Date of User creation must be a datetime"
-            )  # TODO: Consider checking for "impossible" dates
+            )
         return created_on

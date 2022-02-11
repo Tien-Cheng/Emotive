@@ -1,8 +1,9 @@
 """
 Test how app handles unexpected errors via the error handler
 """
-import pytest
 from io import BytesIO
+
+import pytest
 
 
 @pytest.mark.parametrize(
