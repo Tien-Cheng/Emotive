@@ -982,9 +982,7 @@ def api_predict():
 
     # From shape of (48,48,3) to (1,48,48,3)
     data_instance = np.expand_dims(data_instance, axis=0)
-    print(1)
     try:
-        print(1.1)
         json_response = requests.post(
             "https://doaa-ca2-emotive-model.herokuapp.com/v1/models/img_classifier:predict",
             data=json.dumps(
@@ -995,14 +993,9 @@ def api_predict():
             ),
             headers={"content-type": "application/json"},
         )
-        print(1.2)
-        print(json_response.text)
         predictions = json.loads(json_response.text)["predictions"]
-        print(1.3)
     except Exception as e:
-        print(1.4)
-        print(e)
-        raise API_Error("Model unable to predict image", 999)
+        raise API_Error("Model unable to predict image. It is likely that the model is facing high demand at the moment and thus cannot process your request.", 500)
     
     print(2)
     # === Save image metadata to database ===>
