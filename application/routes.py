@@ -995,6 +995,7 @@ def api_predict():
         )
         predictions = json.loads(json_response.text)["predictions"]
     except Exception as e:
+        print(e)
         raise API_Error("Model unable to predict image. It is likely that the model is facing high demand at the moment and thus cannot process your request.", 500)
     
     # === Save image metadata to database ===>
