@@ -1,4 +1,4 @@
-# CA2-2B01-Emotive-Web
+# Emotive: Emotion Tracking with Deep Learning
 
 This repository contains the main code for the Emotive web application. Emotive is an emotion tracker that relies on deep learning to classify facial emotions.
 
