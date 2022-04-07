@@ -16,6 +16,7 @@
                 {% endfor %}
                 <p class="mb-1 mt-4">{{form.password.label}}</p>
                 <div>{{ form.password(class_='form-control') }}</div>
+                <p class="mb-0 text-red text-small">WARNING: This app is not maintained, so while the passwords are encrypted (i.e. the DB does not store your passwords in plaintext), I still don't recommend you put your real passwords here. Do it at your own risk. - Tien Cheng</p>
                 {% for error in form.password.errors %}
                     <p class="mb-0 text-red text-small">{{ error }}</p>
                 {% endfor %}
