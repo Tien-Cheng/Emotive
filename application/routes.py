@@ -431,16 +431,6 @@ def register():
 
             # If user does not exist, add to database
             if not user:
-
-                # Only the developers can register
-                # Example of valid pass: "devfqtc-myPassWord"
-                # "myPassWord" will be the password of user
-                if password.split("-")[0] != "devfqtc":
-                    flash("Registration is disabled!", "red")
-                    return redirect(url_for("register"))
-                else:
-                    password = "-".join(password.split("-")[1:])
-
                 try:
                     user_db = User(
                         username=str(username),
