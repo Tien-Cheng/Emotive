@@ -1,0 +1,20 @@
+name: Tests
+
+on: pull_request
+
+jobs:
+  tests:
+    runs-on:  ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TESTING: config_test.cfg
+    steps:
+      - name: Checkout # checks-out your repository under $GITHUB_WORKSPACE , so your workflow can access it
+        uses: actions/checkout@v3
+      - uses: actions/setup-python@v3 # Setup python for testing
+        with:
+          python-version: "3.8" # Python 3.8 is tested since deployed Docker image is using Python3.8
+      - name: Install Python Requirements
+        run: pip install -r requirements.txt
+      - name: Run tests
+        run: python -m pytest -vs
