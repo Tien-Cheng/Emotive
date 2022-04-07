@@ -1,8 +1,6 @@
 name: Tests
 
-on:
-  pull_request:
-    - main
+on: pull_request
 
 jobs:
   runs-on:  ubuntu-latest
