@@ -27,7 +27,7 @@ elif "DEVELOPMENT" in os.environ:
 
 else:
     app.config.from_pyfile("config_deploy.cfg")
-    app.config.fromenvvar("SECRET_KEY")
+    app.config.fromenvvar("SECRET_KEY") # Stored securely in Heroku
     print("Using Deployment configuration")
 
 # Fix to get Heroku PostgreSQL to work
